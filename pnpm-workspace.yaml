@@ -1,0 +1,14 @@
+allowBuilds:
+  esbuild: true
+  workerd: true
+  sharp: true
+  better-sqlite3: true
+minimumReleaseAgeExclude:
+  - '@cloudflare/workerd-darwin-64@1.20261013.1'
+  - '@cloudflare/workerd-darwin-arm64@1.20261013.1'
+  - '@cloudflare/workerd-linux-64@1.20261013.1'
+  - '@cloudflare/workerd-linux-arm64@1.20261013.1'
+  - '@cloudflare/workerd-windows-64@1.20261013.1'
+  - workerd@1.20261013.1
+overrides:
+  workerd: 1.20261013.1

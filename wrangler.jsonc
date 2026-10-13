@@ -1,0 +1,47 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "composer-guestbook",
+  "account_id": "1003dc1d93af0ebea56b2f1252f89627",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-10-13",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "guestbook.loftwah.com",
+      "custom_domain": true
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "composer-guestbook",
+      "database_id": "1b7862f8-35ca-46cc-a37d-e21142f81e21",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  },
+  "vars": {
+    "PUBLIC_ORIGIN": "https://guestbook.loftwah.com"
+  },
+  "r2_buckets": [
+    {
+      "binding": "MEDIA",
+      "bucket_name": "composer-guestbook-photos"
+    }
+  ],
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "define": {
+    "BUILD_SHA": "\"uncommitted\"",
+    "MANIFEST": "{\"contract\": 1, \"id\": \"guestbook\", \"name\": \"Here / there\", \"version\": \"1.0.0\", \"repository\": \"https://github.com/loftwah/app-composer-guestbook\", \"runtime\": \"cloudflare-worker\", \"entry\": \"src/worker.ts\", \"dataVersion\": 1, \"routes\": [\"/guestbook\"], \"capabilities\": [\"items:read\", \"items:moderate\", \"media:private\"], \"configuration\": {\"title\": {\"type\": \"string\", \"default\": \"Here / there\", \"maxLength\": 80}, \"intro\": {\"type\": \"string\", \"default\": \"A place for moments worth keeping.\", \"maxLength\": 240}, \"theme\": {\"type\": \"select\", \"options\": [\"daylight\", \"midnight\"], \"default\": \"daylight\"}, \"layout\": {\"type\": \"select\", \"options\": [\"grid\", \"editorial\"], \"default\": \"grid\"}, \"maxItems\": {\"type\": \"integer\", \"min\": 1, \"max\": 8, \"default\": 8}}}"
+  }
+}
