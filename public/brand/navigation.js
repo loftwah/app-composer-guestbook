@@ -56,6 +56,13 @@ document.addEventListener("keydown", (e) => {
 });
 search.addEventListener("input", filter);
 search.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    e.preventDefault();
+    e.stopPropagation();
+    dialog.close();
+    trigger.focus();
+    return;
+  }
   if (e.key === "Enter") {
     const first = links.find((l) => !l.hidden)?.querySelector("a");
     if (first) {
