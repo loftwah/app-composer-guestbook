@@ -1,0 +1,1 @@
+Original generated App Composer app illustrations, reviewed 14 October 2026. These 96px WebP derivatives come from the preserved original masters and prompt provenance in https://github.com/loftwah/app-composer/tree/main/public/brand/apps. Copyright/usage follows the parent MIT repository. No vendor UI or personal images.
