@@ -1,3 +1,4 @@
+import {health,publish,pageEvent,type PublisherEnv} from "./publisher.mjs";
 import {
   authorised,
   basePath,
@@ -16,7 +17,7 @@ import {
   type BaseEnv,
 } from "./common";
 import { sanitisePNG } from "./png";
-interface Env extends BaseEnv {
+interface Env extends BaseEnv, PublisherEnv {
   MEDIA: R2Bucket;
   ASSETS?: Fetcher;
 }
@@ -41,7 +42,7 @@ function item(p: any, origin: string, base: string) {
     synthetic: !!p.synthetic,
   };
 }
-export default {
+const app = {
   async fetch(req: Request, env: Env): Promise<Response> {
     try {
       const u = new URL(req.url),
@@ -285,3 +286,10 @@ export default {
 } satisfies ExportedHandler<Env>;
 declare const BUILD_SHA: string;
 declare const MANIFEST: unknown;
+
+export default {async fetch(req:Request,env:Env,context:ExecutionContext){
+ const base=basePath(new URL(req.url),"guestbook");
+ const probe=health(req,base+'/healthz',"guestbook",BUILD_SHA);if(probe)return probe;
+ const response=await app.fetch(req,env);const event=pageEvent(req,response,base);
+ if(event)publish(env,context,req,event);return response;
+}} satisfies ExportedHandler<Env>;

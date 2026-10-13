@@ -3,3 +3,5 @@ node_modules/
 .private/
 .dev.vars*
 .env*
+
+dist/
