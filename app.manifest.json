@@ -2,7 +2,7 @@
   "contract": 1,
   "id": "guestbook",
   "name": "Here / there",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "repository": "https://github.com/loftwah/app-composer-guestbook",
   "runtime": "cloudflare-worker",
   "entry": "src/worker.ts",
@@ -23,7 +23,7 @@
     },
     "intro": {
       "type": "string",
-      "default": "A place for moments worth keeping.",
+      "default": "A little piece of where you are, approved before it is shared.",
       "maxLength": 240
     },
     "theme": {
