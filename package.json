@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "wrangler dev",
     "check": "tsc --noEmit",
-    "deploy": "node scripts/deploy.mjs"
+    "deploy": "node scripts/deploy.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:page": "node --experimental-strip-types --test tests/page.test.mjs"
   },
   "devDependencies": {
     "wrangler": "4.143.1",
