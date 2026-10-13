@@ -251,7 +251,7 @@ export default {
         if (!p) return error("This contribution is not public", 404);
         return html(
           p.caption,
-          `<a href="${base || "/"}">Back to the guestbook</a><h1>${escape(p.caption)}</h1><img src="${base}/media/${escape(p.id)}" alt="${escape(p.caption)}" width="1200" height="900"><p>${escape(p.author)}${p.synthetic ? " · Original illustrative demo artwork" : ""}</p>`,
+          `<a href="${base || "/"}">Back to the guestbook</a><h1>${escape(p.caption)}</h1><img class="detail-media" src="${base}/media/${escape(p.id)}" alt="${escape(p.caption)}" width="1200" height="900"><p>${escape(p.author)}${p.synthetic ? " · Original illustrative demo artwork" : ""}</p>`,
           base,
           "guestbook",
           String(config.theme),
@@ -266,7 +266,7 @@ export default {
         ).all();
         return html(
           String(config.title),
-          `<h1>${escape(config.title)}</h1><p class="lede">${escape(config.intro)}</p><img class="mini-cover" src="${base}/brand/courtyard-ai-v1.jpg" width="1200" height="630" alt="Generated fictional courtyard with terracotta walls and a green chair."><p class="small">A working, moderated guestbook. Demo artwork is illustrative; submissions are invitation-only.</p><div class="gallery ${escape(config.layout)}">${results.map((p: any) => `<article><a href="${base}/item/${escape(p.id)}"><img src="${base}/media/${escape(p.id)}" alt="${escape(p.caption)}" width="1200" height="900" loading="lazy"><h3>${escape(p.caption)}</h3></a><p>${escape(p.author)} ${p.synthetic ? '<span class="badge">Demo artwork</span>' : ""}</p></article>`).join("") || "<p>The gallery is waiting for its first approved contribution.</p>"}</div><a class="button" href="${base}/owner">Invited? Add a moment</a>`,
+          `<h1>${escape(config.title)}</h1><p class="lede">${escape(config.intro)}</p><img class="mini-cover" src="${base}/brand/courtyard-ai-v1.jpg" width="1200" height="630" alt="Generated fictional courtyard with terracotta walls and a green chair."><p class="small">A working, moderated guestbook. Demo artwork is illustrative; submissions are invitation-only.</p><div class="gallery-controls"><label>Find in this collection<input id="gallery-search" type="search" placeholder="Caption, title or alias" autocomplete="off"></label></div><p id="gallery-count" class="small" role="status" aria-live="polite"></p><p id="gallery-empty" class="gallery-empty" hidden>No items match. Try another search.</p><div class="gallery ${escape(config.layout)}">${results.map((p: any) => `<article data-gallery-item><a href="${base}/item/${escape(p.id)}"><img src="${base}/media/${escape(p.id)}" alt="${escape(p.caption)}" width="1200" height="900" loading="lazy"><h3>${escape(p.caption)}</h3></a><p>${escape(p.author)} ${p.synthetic ? '<span class="badge">Demo artwork</span>' : ""}</p></article>`).join("") || "<p>The gallery is waiting for its first approved contribution.</p>"}</div><a class="button" href="${base}/owner">Invited? Add a moment</a>`,
           base,
           "guestbook",
           String(config.theme),
