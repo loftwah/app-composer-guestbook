@@ -41,7 +41,7 @@
     "run_worker_first": true
   },
   "define": {
-    "BUILD_SHA": "\"uncommitted\"",
-    "MANIFEST": "{\"contract\": 1, \"id\": \"guestbook\", \"name\": \"Here / there\", \"version\": \"1.0.0\", \"repository\": \"https://github.com/loftwah/app-composer-guestbook\", \"runtime\": \"cloudflare-worker\", \"entry\": \"src/worker.ts\", \"dataVersion\": 1, \"routes\": [\"/guestbook\"], \"capabilities\": [\"items:read\", \"items:moderate\", \"media:private\"], \"configuration\": {\"title\": {\"type\": \"string\", \"default\": \"Here / there\", \"maxLength\": 80}, \"intro\": {\"type\": \"string\", \"default\": \"A place for moments worth keeping.\", \"maxLength\": 240}, \"theme\": {\"type\": \"select\", \"options\": [\"daylight\", \"midnight\"], \"default\": \"daylight\"}, \"layout\": {\"type\": \"select\", \"options\": [\"grid\", \"editorial\"], \"default\": \"grid\"}, \"maxItems\": {\"type\": \"integer\", \"min\": 1, \"max\": 8, \"default\": 8}}}"
-  }
+    "MANIFEST": "{\"contract\": 1, \"id\": \"guestbook\", \"name\": \"Here / there\", \"version\": \"1.0.0\", \"repository\": \"https://github.com/loftwah/app-composer-guestbook\", \"runtime\": \"cloudflare-worker\", \"entry\": \"src/worker.ts\", \"dataVersion\": 1, \"routes\": [\"/guestbook\"], \"capabilities\": [\"items:read\", \"items:moderate\", \"media:private\"], \"configuration\": {\"title\": {\"type\": \"string\", \"default\": \"Here / there\", \"maxLength\": 80}, \"intro\": {\"type\": \"string\", \"default\": \"A place for moments worth keeping.\", \"maxLength\": 240}, \"theme\": {\"type\": \"select\", \"options\": [\"daylight\", \"midnight\"], \"default\": \"daylight\"}, \"layout\": {\"type\": \"select\", \"options\": [\"grid\", \"editorial\"], \"default\": \"grid\"}}}"
+  },
+  "preview_urls": false
 }

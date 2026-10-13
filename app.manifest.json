@@ -41,12 +41,6 @@
         "editorial"
       ],
       "default": "grid"
-    },
-    "maxItems": {
-      "type": "integer",
-      "min": 1,
-      "max": 8,
-      "default": 8
     }
   }
 }

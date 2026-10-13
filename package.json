@@ -1,1 +1,16 @@
-{"name": "@loftwah/composer-guestbook", "version": "1.0.0", "private": true, "type": "module", "scripts": {"dev": "wrangler dev", "check": "tsc --noEmit", "deploy": "wrangler deploy"}, "devDependencies": {"wrangler": "4.143.1", "typescript": "6.0.3", "@cloudflare/workers-types": "5.20260929.1"}}
+{
+  "name": "@loftwah/composer-guestbook",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "check": "tsc --noEmit",
+    "deploy": "node scripts/deploy.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.143.1",
+    "typescript": "6.0.3",
+    "@cloudflare/workers-types": "5.20260929.1"
+  }
+}
