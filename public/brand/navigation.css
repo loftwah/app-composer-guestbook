@@ -1,0 +1,107 @@
+[hidden] {
+  display: none !important;
+}
+.app-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.app-tools a,
+.app-tools button {
+  min-height: 44px;
+  font-size: 14px;
+  padding: 10px 14px;
+}
+.app-tools button {
+  background: var(--surface, #23252a);
+  color: var(--fg, #f2f3f5);
+  border: 1px solid var(--control, #797f8a);
+}
+#app-navigation {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(540px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  border: 1px solid var(--control, #797f8a);
+  border-radius: 12px;
+  background: var(--field, #1d1f23);
+  color: var(--fg, #f2f3f5);
+  padding: 24px;
+}
+#app-navigation::backdrop {
+  background: rgb(0 0 0 / 0.65);
+}
+#app-navigation .dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+#app-navigation h2 {
+  font-size: 22px;
+  margin: 0;
+}
+#app-navigation button {
+  background: var(--surface, #23252a);
+  color: var(--fg, #f2f3f5);
+  min-height: 44px;
+  border: 1px solid var(--control, #797f8a);
+}
+#app-navigation label {
+  font-size: 14px;
+  margin: 20px 0 0;
+}
+#app-navigation input {
+  width: 100%;
+  max-width: none;
+  margin: 6px 0 0;
+  background: var(--field, #1d1f23);
+  color: var(--fg, #f2f3f5);
+  border: 1px solid var(--control, #797f8a);
+  min-height: 48px;
+  padding: 12px;
+}
+#app-navigation ul {
+  padding: 0;
+  margin: 12px 0;
+  list-style: none;
+}
+#app-navigation a {
+  display: block;
+  text-decoration: none;
+  padding: 14px 12px;
+  min-height: 48px;
+  border-radius: 6px;
+  color: inherit;
+}
+#app-navigation a:hover {
+  background: var(--surface, #23252a);
+}
+#app-navigation small {
+  display: block;
+  color: var(--muted, #afb3bb);
+  font-size: 12px;
+}
+#app-navigation [role="status"] {
+  font-size: 13px;
+  color: var(--muted, #afb3bb);
+}
+.app-tools kbd {
+  font: 12px system-ui;
+  margin-left: 8px;
+  color: var(--muted, #afb3bb);
+}
+@media (max-width: 740px) {
+  .app-tools {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .app-tools a,
+  .app-tools button {
+    padding: 8px 10px;
+  }
+}
