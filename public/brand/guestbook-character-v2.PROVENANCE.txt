@@ -1,0 +1,6 @@
+Original App Composer illustration — guestbook
+Generated 14 October 2026 with the built-in image_gen tool under MP's authorisation.
+Source retained locally: exec-8764c16f-5a6f-4894-98fd-8714c3117d54.png
+Art direction: original textured gouache / cut-paper editorial illustration, Australian magpie, warm cream, burnt orange, cobalt and teal. No text, logos, borrowed characters or UI. Neighbourhood letterbox with coastal, city-night and garden-party postcards.
+Viewed before use. Derivatives: Lanczos resize to 600/1200px WebP quality 83; 1200×630 JPEG social crop quality 88. Dimensions reserved in HTML; image is illustration, never a claim of submitted photos. Generated originals remain outside the source repository.
+Licence for these original project assets: MIT, like this repository.

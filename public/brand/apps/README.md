@@ -1,1 +1,3 @@
 Original generated App Composer app illustrations, reviewed 14 October 2026. These 96px WebP derivatives come from the preserved original masters and prompt provenance in https://github.com/loftwah/app-composer/tree/main/public/brand/apps. Copyright/usage follows the parent MIT repository. No vendor UI or personal images.
+
+Version 2 Guestbook and Showcase navigation crops, reviewed 14 October 2026: 96px WebP derivatives of the original `guestbook-character-v2` and `showcase-character-v2` illustrations in their respective MIT repositories. Same generated originals as each app hero, Lanczos centre crop, quality 84. Original generation/provenance is retained by each owning app; no third-party artwork.

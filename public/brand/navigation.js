@@ -73,6 +73,6 @@ search.addEventListener("keydown", (e) => {
 const gallerySearch=document.querySelector('#gallery-search');
 if(gallerySearch){
  const items=[...document.querySelectorAll('[data-gallery-item]')],type=document.querySelector('#gallery-type'),status=document.querySelector('#gallery-count'),empty=document.querySelector('#gallery-empty');
- function filterGallery(){let count=0;for(const item of items){item.hidden=!(item.textContent.toLowerCase().includes(gallerySearch.value.trim().toLowerCase())&&(!type?.value||item.dataset.kind===type.value));if(!item.hidden)count++;}status.textContent=`${count} ${count===1?'item':'items'} shown`;empty.hidden=count!==0;}
+ function filterGallery(){let count=0;for(const item of items){item.hidden=!(item.textContent.toLowerCase().includes(gallerySearch.value.trim().toLowerCase())&&(!type?.value||item.dataset.kind===type.value));if(!item.hidden)count++;}status.textContent=`${count} ${count===1?'item':'items'} shown`;empty.hidden=items.length===0||count!==0;}
  gallerySearch.addEventListener('input',filterGallery);type?.addEventListener('change',filterGallery);filterGallery();
 }
