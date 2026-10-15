@@ -266,6 +266,8 @@ const app = {
           p.caption,
           env.PUBLIC_ORIGIN,
           path,
+          env.PUBLIC_ORIGIN,
+          String(config.title),
         );
       }
       if (path === "/") {

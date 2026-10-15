@@ -34,6 +34,7 @@ for(const base of ['', '/guestbook']) test('guest pending → owner approve → 
     assert.doesNotMatch(await(await f.request('/')).text(),/fictional postcard|Fictional visitor/);
     assert.equal((await f.request('/api/moderate',{id:saved.id,status:'approved'},{token:f.env.OWNER_API_TOKEN})).status,200);
     assert.equal((await f.request('/media/'+saved.id)).status,200);
+    const detail=await(await f.request('/item/'+saved.id)).text();assert.match(detail,/<h1>A fictional postcard &lt;script&gt;never\(\)&lt;\/script&gt;<\/h1>/);if(!base)assert.match(detail,/<strong>Fictional guestbook<\/strong>/);
     const publicItem=await(await f.request('/api/items/'+saved.id)).json();assert.equal(publicItem.url,'https://guestbook.example.test'+base+'/item/'+saved.id);
     const page=await(await f.request('/')).text();assert.match(page,/&lt;script&gt;never\(\)&lt;\/script&gt;/);assert.doesNotMatch(page,/<script>never\(\)/);
     assert.equal((await f.request('/api/moderate',{id:saved.id,status:'hidden'},{token:f.env.OWNER_API_TOKEN})).status,200);
