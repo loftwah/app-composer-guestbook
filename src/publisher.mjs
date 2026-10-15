@@ -25,3 +25,9 @@ export function pageEvent(request,response,base=''){
  if(base.includes('guestbook')||!base){if(/^\/item\/[a-f0-9-]{36}$/.test(path.slice(base.length)))return 'item_open';}
  return null;
 }
+
+// Receipt means a new committed pending record, never publication or a unique visitor.
+export function postcardReceiptEvent(request,response,base=''){
+ if(request.method!=='POST'||response.status!==201||response.headers.get('Content-Type')?.split(';')[0]!=='application/json')return null;
+ return new URL(request.url).pathname===base+'/api/guest-postcard'?'postcard_received':null;
+}
