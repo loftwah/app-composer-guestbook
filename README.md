@@ -6,7 +6,7 @@ An original, independently deployable guestbook mini-app. MIT. Reviewed 13 Octob
 
 Versioned contract: `app.manifest.json`. Generic provider API: `/api/items` and `/api/items/:id`, contract 1; only currently public approved items are returned. Media and item queries send no-store, so source revocation applies on the next controlled request. A downloaded copy cannot be recalled.
 
-Owner signs in at `/owner` with the runtime credential. Public browsing works without Composer. Uploads are invitation/owner-only; no anonymous multi-tenant promise. Composition mounts this service under its manifest route. Data remains with the app, never inside Composer.
+Owner signs in at `/owner` with the runtime credential. Public browsing works without Composer. Owner photo uploads remain invitation/owner-only. An optional guest postcard path is closed by default: the owner can enable it in configuration, and the public puzzle code `hunter2` permits new pending postcards only. It never signs a guest into the owner studio. No anonymous multi-tenant promise. Composition mounts this service under its manifest route. Data remains with the app, never inside Composer.
 
 ## Public project standard
 
@@ -27,3 +27,11 @@ The launch operator enables its own instances through Wrangler secrets; do not c
 Add `?vitals=1` to the public page, then open “Page performance” for local LCP/INP/CLS measurements. Values apply to this load only; unsupported metrics say unavailable. The self-hosted standard `web-vitals` 6.2.3 bundle and Apache licence/provenance are retained. No values, element attribution or page data are uploaded or persisted. Developer console links stay public and do not print app contents.
 
 Original editorial presentation, reviewed 14 October 2026: app-specific illustrated hero and sharing artwork, responsive 600/1200px WebP sources, reserved image dimensions, clear collection/story sections and native browse/contribute actions. Illustration is labelled separately from published contributions. Mounted social URLs resolve inside the app mount. Owner titles, introductions, layouts, moderation, data and configuration contracts are preserved. Asset provenance and optimisation are recorded beside each derivative.
+
+## Optional guest postcards
+
+The owner sets `guestAccess` to `postcards` (or back to `closed`) through the existing configuration contract. Guests open `/contribute`, write up to 160 characters and an optional 60-character alias, confirm consent, and send a browser-rendered PNG postcard. This is a visual contribution with accessible caption/alias metadata, not a new message database or a verified identity. The puzzle code is intentionally public; authority comes from the narrow server route. No owner credential or guest session is issued.
+
+`POST /api/guest-postcard` accepts only code/caption/author/consent/png from the same origin, validates/sanitises the PNG (100 KB, 1200 × 900 maximum), and creates a new random pending item. The existing provider, media visibility, owner review and revocation paths apply unchanged. A guest cannot publish, modify/delete another entry, export, change settings, see pending/private media or use owner uploads. Owner closure/pause and queue/collection caps are rechecked atomically at insertion; storage failure cleans the generated object where possible and never exposes it publicly.
+
+Bounds: six attempts per IP-derived connection bucket per 15 minutes, two valid submissions per bucket, eight admitted submissions globally per UTC day, sixteen pending review items and the existing 200-item gallery cap. Failed storage/admission attempts can consume a daily slot; retries are explicit. These are abuse/storage bounds, not distinct-person counts. Existing owner photos/data/configuration stay in their app-owned D1/R2; no schema migration is needed. The default and earlier clients keep submissions closed unless the owner explicitly activates them. Browser/production qualification and Composer source-pin promotion remain separate from source tests.

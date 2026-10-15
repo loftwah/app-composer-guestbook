@@ -41,6 +41,14 @@
         "editorial"
       ],
       "default": "grid"
+    },
+    "guestAccess": {
+      "type": "select",
+      "options": [
+        "closed",
+        "postcards"
+      ],
+      "default": "closed"
     }
   }
 }
