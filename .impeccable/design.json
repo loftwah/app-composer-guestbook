@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-15T15:30:14.118390+00:00",
+  "title": "Design System: Here / there",
+  "extensions": {
+    "colorMeta": {
+      "dark-bg": {
+        "role": "neutral",
+        "displayName": "Dark Bg",
+        "canonical": "#17181b",
+        "tonalRamp": [
+          "oklch(15% 0.0061 271.12)",
+          "oklch(26.4% 0.0061 271.12)",
+          "oklch(37.9% 0.0061 271.12)",
+          "oklch(49.3% 0.0061 271.12)",
+          "oklch(60.7% 0.0061 271.12)",
+          "oklch(72.1% 0.0061 271.12)",
+          "oklch(83.6% 0.0061 271.12)",
+          "oklch(95% 0.0061 271.12)"
+        ]
+      },
+      "dark-fg": {
+        "role": "neutral",
+        "displayName": "Dark Fg",
+        "canonical": "#f2f3f5",
+        "tonalRamp": [
+          "oklch(15% 0.0029 264.54)",
+          "oklch(26.4% 0.0029 264.54)",
+          "oklch(37.9% 0.0029 264.54)",
+          "oklch(49.3% 0.0029 264.54)",
+          "oklch(60.7% 0.0029 264.54)",
+          "oklch(72.1% 0.0029 264.54)",
+          "oklch(83.6% 0.0029 264.54)",
+          "oklch(95% 0.0029 264.54)"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Dark Muted",
+        "canonical": "#afb3bb",
+        "tonalRamp": [
+          "oklch(15% 0.0122 264.49)",
+          "oklch(26.4% 0.0122 264.49)",
+          "oklch(37.9% 0.0122 264.49)",
+          "oklch(49.3% 0.0122 264.49)",
+          "oklch(60.7% 0.0122 264.49)",
+          "oklch(72.1% 0.0122 264.49)",
+          "oklch(83.6% 0.0122 264.49)",
+          "oklch(95% 0.0122 264.49)"
+        ]
+      },
+      "dark-surface": {
+        "role": "neutral",
+        "displayName": "Dark Surface",
+        "canonical": "#23252a",
+        "tonalRamp": [
+          "oklch(15% 0.0098 268.31)",
+          "oklch(26.4% 0.0098 268.31)",
+          "oklch(37.9% 0.0098 268.31)",
+          "oklch(49.3% 0.0098 268.31)",
+          "oklch(60.7% 0.0098 268.31)",
+          "oklch(72.1% 0.0098 268.31)",
+          "oklch(83.6% 0.0098 268.31)",
+          "oklch(95% 0.0098 268.31)"
+        ]
+      },
+      "dark-field": {
+        "role": "neutral",
+        "displayName": "Dark Field",
+        "canonical": "#1d1f23",
+        "tonalRamp": [
+          "oklch(15% 0.0082 264.41)",
+          "oklch(26.4% 0.0082 264.41)",
+          "oklch(37.9% 0.0082 264.41)",
+          "oklch(49.3% 0.0082 264.41)",
+          "oklch(60.7% 0.0082 264.41)",
+          "oklch(72.1% 0.0082 264.41)",
+          "oklch(83.6% 0.0082 264.41)",
+          "oklch(95% 0.0082 264.41)"
+        ]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "Dark Border",
+        "canonical": "#444952",
+        "tonalRamp": [
+          "oklch(15% 0.0165 262.30)",
+          "oklch(26.4% 0.0165 262.30)",
+          "oklch(37.9% 0.0165 262.30)",
+          "oklch(49.3% 0.0165 262.30)",
+          "oklch(60.7% 0.0165 262.30)",
+          "oklch(72.1% 0.0165 262.30)",
+          "oklch(83.6% 0.0165 262.30)",
+          "oklch(95% 0.0165 262.30)"
+        ]
+      },
+      "dark-control": {
+        "role": "neutral",
+        "displayName": "Dark Control",
+        "canonical": "#797f8a",
+        "tonalRamp": [
+          "oklch(15% 0.0182 262.71)",
+          "oklch(26.4% 0.0182 262.71)",
+          "oklch(37.9% 0.0182 262.71)",
+          "oklch(49.3% 0.0182 262.71)",
+          "oklch(60.7% 0.0182 262.71)",
+          "oklch(72.1% 0.0182 262.71)",
+          "oklch(83.6% 0.0182 262.71)",
+          "oklch(95% 0.0182 262.71)"
+        ]
+      },
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Dark Accent",
+        "canonical": "#ff9b55",
+        "tonalRamp": [
+          "oklch(15% 0.1467 53.69)",
+          "oklch(26.4% 0.1467 53.69)",
+          "oklch(37.9% 0.1467 53.69)",
+          "oklch(49.3% 0.1467 53.69)",
+          "oklch(60.7% 0.1467 53.69)",
+          "oklch(72.1% 0.1467 53.69)",
+          "oklch(83.6% 0.1467 53.69)",
+          "oklch(95% 0.1467 53.69)"
+        ]
+      },
+      "light-bg": {
+        "role": "neutral",
+        "displayName": "Light Bg",
+        "canonical": "#faf9f7",
+        "tonalRamp": [
+          "oklch(15% 0.0029 84.56)",
+          "oklch(26.4% 0.0029 84.56)",
+          "oklch(37.9% 0.0029 84.56)",
+          "oklch(49.3% 0.0029 84.56)",
+          "oklch(60.7% 0.0029 84.56)",
+          "oklch(72.1% 0.0029 84.56)",
+          "oklch(83.6% 0.0029 84.56)",
+          "oklch(95% 0.0029 84.56)"
+        ]
+      },
+      "light-fg": {
+        "role": "neutral",
+        "displayName": "Light Fg",
+        "canonical": "#22252b",
+        "tonalRamp": [
+          "oklch(15% 0.0120 264.34)",
+          "oklch(26.4% 0.0120 264.34)",
+          "oklch(37.9% 0.0120 264.34)",
+          "oklch(49.3% 0.0120 264.34)",
+          "oklch(60.7% 0.0120 264.34)",
+          "oklch(72.1% 0.0120 264.34)",
+          "oklch(83.6% 0.0120 264.34)",
+          "oklch(95% 0.0120 264.34)"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "Light Muted",
+        "canonical": "#5c616a",
+        "tonalRamp": [
+          "oklch(15% 0.0157 262.33)",
+          "oklch(26.4% 0.0157 262.33)",
+          "oklch(37.9% 0.0157 262.33)",
+          "oklch(49.3% 0.0157 262.33)",
+          "oklch(60.7% 0.0157 262.33)",
+          "oklch(72.1% 0.0157 262.33)",
+          "oklch(83.6% 0.0157 262.33)",
+          "oklch(95% 0.0157 262.33)"
+        ]
+      },
+      "light-surface": {
+        "role": "neutral",
+        "displayName": "Light Surface",
+        "canonical": "#efeeea",
+        "tonalRamp": [
+          "oklch(15% 0.0054 95.10)",
+          "oklch(26.4% 0.0054 95.10)",
+          "oklch(37.9% 0.0054 95.10)",
+          "oklch(49.3% 0.0054 95.10)",
+          "oklch(60.7% 0.0054 95.10)",
+          "oklch(72.1% 0.0054 95.10)",
+          "oklch(83.6% 0.0054 95.10)",
+          "oklch(95% 0.0054 95.10)"
+        ]
+      },
+      "light-field": {
+        "role": "neutral",
+        "displayName": "Light Field",
+        "canonical": "#fff",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26.4% 0.0000 89.88)",
+          "oklch(37.9% 0.0000 89.88)",
+          "oklch(49.3% 0.0000 89.88)",
+          "oklch(60.7% 0.0000 89.88)",
+          "oklch(72.1% 0.0000 89.88)",
+          "oklch(83.6% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "light-border": {
+        "role": "neutral",
+        "displayName": "Light Border",
+        "canonical": "#d3d1cc",
+        "tonalRamp": [
+          "oklch(15% 0.0072 88.65)",
+          "oklch(26.4% 0.0072 88.65)",
+          "oklch(37.9% 0.0072 88.65)",
+          "oklch(49.3% 0.0072 88.65)",
+          "oklch(60.7% 0.0072 88.65)",
+          "oklch(72.1% 0.0072 88.65)",
+          "oklch(83.6% 0.0072 88.65)",
+          "oklch(95% 0.0072 88.65)"
+        ]
+      },
+      "light-control": {
+        "role": "neutral",
+        "displayName": "Light Control",
+        "canonical": "#747983",
+        "tonalRamp": [
+          "oklch(15% 0.0165 264.44)",
+          "oklch(26.4% 0.0165 264.44)",
+          "oklch(37.9% 0.0165 264.44)",
+          "oklch(49.3% 0.0165 264.44)",
+          "oklch(60.7% 0.0165 264.44)",
+          "oklch(72.1% 0.0165 264.44)",
+          "oklch(83.6% 0.0165 264.44)",
+          "oklch(95% 0.0165 264.44)"
+        ]
+      },
+      "light-accent": {
+        "role": "primary",
+        "displayName": "Light Accent",
+        "canonical": "#a63d08",
+        "tonalRamp": [
+          "oklch(15% 0.1492 41.22)",
+          "oklch(26.4% 0.1492 41.22)",
+          "oklch(37.9% 0.1492 41.22)",
+          "oklch(49.3% 0.1492 41.22)",
+          "oklch(60.7% 0.1492 41.22)",
+          "oklch(72.1% 0.1492 41.22)",
+          "oklch(83.6% 0.1492 41.22)",
+          "oklch(95% 0.1492 41.22)"
+        ]
+      },
+      "postcard-paper": {
+        "role": "neutral",
+        "displayName": "Postcard Paper",
+        "canonical": "#f4f0e7",
+        "tonalRamp": [
+          "oklch(15% 0.0127 86.83)",
+          "oklch(26.4% 0.0127 86.83)",
+          "oklch(37.9% 0.0127 86.83)",
+          "oklch(49.3% 0.0127 86.83)",
+          "oklch(60.7% 0.0127 86.83)",
+          "oklch(72.1% 0.0127 86.83)",
+          "oklch(83.6% 0.0127 86.83)",
+          "oklch(95% 0.0127 86.83)"
+        ]
+      },
+      "postcard-ink": {
+        "role": "neutral",
+        "displayName": "Postcard Ink",
+        "canonical": "#20241e",
+        "tonalRamp": [
+          "oklch(15% 0.0125 135.08)",
+          "oklch(26.4% 0.0125 135.08)",
+          "oklch(37.9% 0.0125 135.08)",
+          "oklch(49.3% 0.0125 135.08)",
+          "oklch(60.7% 0.0125 135.08)",
+          "oklch(72.1% 0.0125 135.08)",
+          "oklch(83.6% 0.0125 135.08)",
+          "oklch(95% 0.0125 135.08)"
+        ]
+      },
+      "postcard-rule": {
+        "role": "neutral",
+        "displayName": "Postcard Rule",
+        "canonical": "#758174",
+        "tonalRamp": [
+          "oklch(15% 0.0241 143.13)",
+          "oklch(26.4% 0.0241 143.13)",
+          "oklch(37.9% 0.0241 143.13)",
+          "oklch(49.3% 0.0241 143.13)",
+          "oklch(60.7% 0.0241 143.13)",
+          "oklch(72.1% 0.0241 143.13)",
+          "oklch(83.6% 0.0241 143.13)",
+          "oklch(95% 0.0241 143.13)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Hero display",
+        "purpose": "Collection hero heading."
+      },
+      "headline": {
+        "displayName": "Headings",
+        "purpose": "Page headings and collection titles."
+      },
+      "body": {
+        "displayName": "Body and native fields",
+        "purpose": "Prose, caption/alias text and 16px fields."
+      },
+      "label": {
+        "displayName": "Collection kicker",
+        "purpose": "Small accent label above the hero."
+      }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "hero-and-workbench",
+        "value": "820px"
+      },
+      {
+        "name": "gallery-single-column",
+        "value": "700px"
+      },
+      {
+        "name": "phone-navigation",
+        "value": "600px"
+      },
+      {
+        "name": "header-navigation-wrap",
+        "value": "1100px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing accent action; light-theme context uses white text.",
+      "html": "<button class=\"ds-button\">Send for approval</button>",
+      "css": ".ds-button{background:var(--accent,#ff9b55);color:var(--bg,#17181b);font:600 15px/1.55 system-ui,sans-serif;padding:12px 20px;min-height:48px;border:0;border-radius:8px;cursor:pointer}.ds-button:hover{filter:brightness(1.1)}.ds-button:focus-visible{outline:3px solid var(--accent,#ff9b55);outline-offset:4px}:host-context([data-theme=light]) .ds-button{color:white}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Existing quieter theme/owner action.",
+      "html": "<button class=\"ds-secondary\">Light mode</button>",
+      "css": ".ds-secondary{background:var(--surface,#23252a);color:var(--fg,#f2f3f5);font:600 15px/1.55 system-ui,sans-serif;padding:12px 20px;min-height:48px;border:1px solid var(--control,#797f8a);border-radius:8px;cursor:pointer}.ds-secondary:hover{filter:brightness(1.1)}.ds-secondary:focus-visible{outline:3px solid var(--accent,#ff9b55);outline-offset:4px}"
+    },
+    {
+      "name": "Labelled Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Native body-size field with a visible label.",
+      "html": "<label class=\"ds-label\">Name or alias (optional)<input class=\"ds-input\" maxlength=\"60\" value=\"Fictional visitor\"></label>",
+      "css": ".ds-label{display:block;color:var(--fg,#f2f3f5);font:16px/1.55 system-ui,sans-serif;margin:12px 0}.ds-input{display:block;width:100%;box-sizing:border-box;margin:6px 0 8px;padding:12px;font:inherit;background:var(--field,#1d1f23);color:var(--fg,#f2f3f5);border:1px solid var(--control,#797f8a);border-radius:6px}.ds-input:focus-visible{outline:3px solid var(--accent,#ff9b55);outline-offset:4px}"
+    },
+    {
+      "name": "Navigation Link",
+      "kind": "nav",
+      "description": "Ordinary wrapping navigation with current-page accent.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Collection navigation\"><a aria-current=\"page\" href=\"#guestbook\">Guestbook</a><a href=\"#linkarooie\">Linkarooie</a><a href=\"#owner\">Owner studio</a></nav>",
+      "css": ".ds-nav{display:flex;gap:8px 20px;flex-wrap:wrap;color:var(--fg,#f2f3f5);font:16px/1.55 system-ui,sans-serif}.ds-nav a{display:inline-flex;align-items:center;min-height:44px;color:inherit;white-space:nowrap;text-underline-offset:4px}.ds-nav a[aria-current]{color:var(--accent,#ff9b55);text-decoration-thickness:2px}.ds-nav a:focus-visible{outline:3px solid var(--accent,#ff9b55);outline-offset:4px}"
+    },
+    {
+      "name": "Demo Artwork Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "Existing factual contribution status label, not an interactive chip.",
+      "html": "<span class=\"ds-badge\">Demo artwork</span>",
+      "css": ".ds-badge{padding:5px 10px;background:var(--surface,#23252a);color:var(--muted,#afb3bb);font:.83rem/1.55 system-ui,sans-serif;border-radius:5px}"
+    },
+    {
+      "name": "Postcard Preview",
+      "kind": "custom",
+      "refersTo": "postcard-preview",
+      "description": "Static SVG specimen of the existing canvas geometry; the application draws canvas and retains accessible text outside the image.",
+      "html": "<figure class=\"ds-preview\"><svg class=\"ds-postcard\" viewBox=\"0 0 1200 900\" role=\"img\" aria-label=\"Fictional postcard preview\"><rect width=\"1200\" height=\"900\" fill=\"#f4f0e7\"/><rect x=\"48\" y=\"48\" width=\"1104\" height=\"804\" fill=\"none\" stroke=\"#758174\" stroke-width=\"2\"/><text x=\"92\" y=\"128\" fill=\"#a63d08\" font-family=\"system-ui\" font-size=\"28\" font-weight=\"600\">A postcard for the guestbook</text><text x=\"92\" y=\"250\" fill=\"#20241e\" font-family=\"system-ui\" font-size=\"40\">Hello from a passing visitor.</text><text x=\"92\" y=\"790\" fill=\"#20241e\" font-family=\"system-ui\" font-size=\"28\">From Fictional visitor</text></svg><figcaption>Postcard preview. Your message and alias above are included in the submitted image.</figcaption></figure>",
+      "css": ".ds-preview{margin:0}.ds-postcard{display:block;width:100%;height:auto;border-radius:8px}.ds-preview figcaption{font:13px/1.55 system-ui,sans-serif;color:var(--muted,#afb3bb);margin-top:12px}"
+    },
+    {
+      "name": "Contribution Card",
+      "kind": "card",
+      "description": "Linked postcard specimen with a real caption and alias below the media.",
+      "html": "<article class=\"ds-card\"><a href=\"#contribution\"><svg class=\"ds-postcard\" viewBox=\"0 0 1200 900\" role=\"img\" aria-label=\"Fictional postcard preview\"><rect width=\"1200\" height=\"900\" fill=\"#f4f0e7\"/><rect x=\"48\" y=\"48\" width=\"1104\" height=\"804\" fill=\"none\" stroke=\"#758174\" stroke-width=\"2\"/><text x=\"92\" y=\"128\" fill=\"#a63d08\" font-family=\"system-ui\" font-size=\"28\" font-weight=\"600\">A postcard for the guestbook</text><text x=\"92\" y=\"250\" fill=\"#20241e\" font-family=\"system-ui\" font-size=\"40\">Hello from a passing visitor.</text><text x=\"92\" y=\"790\" fill=\"#20241e\" font-family=\"system-ui\" font-size=\"28\">From Fictional visitor</text></svg><h3>Hello from a passing visitor.</h3></a><p>Fictional visitor</p></article>",
+      "css": ".ds-card{min-width:0;padding-bottom:20px;border-bottom:1px solid var(--border,#444952);color:var(--fg,#f2f3f5)}.ds-card a{color:inherit;text-decoration:none}.ds-card a:hover h3{text-decoration:underline}.ds-card a:focus-visible{display:block;outline:3px solid var(--accent,#ff9b55);outline-offset:4px}.ds-card .ds-postcard{display:block;width:100%;height:auto;aspect-ratio:4/3;border-radius:8px}.ds-card h3{font:600 20px/1.1 Space,system-ui;letter-spacing:-.025em;margin:16px 0 8px;overflow-wrap:anywhere}.ds-card p{font:16px/1.55 system-ui,sans-serif;overflow-wrap:anywhere}"
+    },
+    {
+      "name": "Consent Checkbox",
+      "kind": "input",
+      "description": "Native required consent with wrapping label and visible focus.",
+      "html": "<label class=\"ds-consent\"><input type=\"checkbox\" required> I wrote this and agree that the owner may publish my postcard and alias.</label>",
+      "css": ".ds-consent{display:flex;align-items:flex-start;gap:12px;color:var(--fg,#f2f3f5);font:16px/1.55 system-ui,sans-serif}.ds-consent input{width:20px;height:20px;flex:none;margin-top:3px}.ds-consent input:focus-visible{outline:3px solid var(--accent,#ff9b55);outline-offset:4px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The guestbook letterbox",
+    "overview": "Keep the built editorial collection: Space headings, charcoal or warm-light surfaces, orange actions and the original magpie on a postcard-filled letterbox. Guest postcards extend that world with paper, ink and a visible preview. Here / there remains the guestbook identity; Linkarooie names the related collection destination. Owner titles, introductions, layouts and theme settings remain authoritative.",
+    "keyCharacteristics": [
+      "Original self-hosted illustration, explicitly separate from submitted contributions.",
+      "Flat collection sections, native controls and readable contribution text.",
+      "A paper postcard preview within the existing interface, in either theme."
+    ],
+    "rules": [
+      {
+        "name": "The Content Wrap Rule",
+        "body": "User headings, captions, aliases, paragraphs and the owner brand can wrap anywhere. Preserve `min-width: 0` on constrained content. The detail header displays the owner brand, while the caption stays in the page heading and metadata.",
+        "section": "layout"
+      }
+    ],
+    "dos": [
+      "Do preserve both themes, original artwork/provenance and owner configuration.",
+      "Do keep caption/alias available outside the postcard image and wrap unbroken input.",
+      "Do distinguish pending review, public approval, closed/paused submissions and revocation in visible copy."
+    ],
+    "donts": [
+      "Don't turn the guest code into an owner sign-in, imply automatic publication or expose unpublished contributions.",
+      "Don't rebrand this guestbook, replace existing assets, or claim production/device/screen-reader acceptance from local captures."
+    ]
+  }
+}
