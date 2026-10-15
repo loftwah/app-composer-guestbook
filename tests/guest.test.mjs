@@ -18,9 +18,10 @@ function fixture(base='') {
   const objects=new Map();const origin='https://guestbook.example.test';
   const env={DB:{prepare:statement},OWNER_API_TOKEN:'fictional-private-owner-key',PUBLIC_ORIGIN:origin,MEDIA:{async put(key,bytes){objects.set(key,bytes);},async delete(key){objects.delete(key);},async get(key){return objects.has(key)?{body:new Blob([objects.get(key)]).stream()}:null;}}};
   globalThis.BUILD_SHA='f'.repeat(40);globalThis.MANIFEST={contract:1,id:'guestbook'};
-  const request=(path,body,{token,ip='192.0.2.1',from=origin,method=body?'POST':'GET'}={})=>worker.fetch(new Request(origin+base+path,{method,headers:{'Content-Type':'application/json',...(from?{Origin:from}:{}),'CF-Connecting-IP':ip,...(token?{Authorization:'Bearer '+token}:{})},...(body?{body:JSON.stringify(body)}:{})}),env,{waitUntil(){}});
+  const pending=[];
+  const request=(path,body,{token,ip='192.0.2.1',from=origin,verification=false,method=body?'POST':'GET'}={})=>worker.fetch(new Request(origin+base+path,{method,headers:{'Content-Type':'application/json',...(from?{Origin:from}:{}),'CF-Connecting-IP':ip,...(verification?{'X-Composer-Verification':'1'}:{}),...(token?{Authorization:'Bearer '+token}:{})},...(body?{body:JSON.stringify(body)}:{})}),env,{waitUntil(promise){pending.push(promise);}});
   const configure=(patch={})=>request('/api/config',{title:'Fictional guestbook',intro:'Fictional only',theme:'daylight',layout:'grid',guestAccess:'postcards',...patch},{token:env.OWNER_API_TOKEN});
-  return {sqlite,env,request,configure,objects};
+  return {sqlite,env,request,configure,objects,pending};
 }
 for(const base of ['', '/guestbook']) test('guest pending → owner approve → public → hide/revoke, '+(base||'standalone'),async()=>{
   const f=fixture(base);try {
@@ -123,4 +124,20 @@ test('stale older settings and pause writes cannot reopen an owner-closed or pau
       assert.equal((await f.request('/api/guest-postcard',postcard())).status,403);
     }finally{resume?.();f.sqlite.close();}
   }
+});
+
+test('receipt publisher observes committed pending acceptance only, never private content or owner publication',async()=>{
+ const f=fixture();const original=globalThis.fetch;const sent=[];try{
+  await f.configure();f.env.USAGE_ENDPOINT='https://counts.example.test/api/usage/guestbook';f.env.USAGE_TOKEN='a'.repeat(48);
+  globalThis.fetch=async(url,options)=>{sent.push({url,options,pendingRows:f.sqlite.prepare("SELECT COUNT(*) n FROM photos WHERE status='pending'").get().n});return new Response(null,{status:204});};
+  assert.equal((await f.request('/api/guest-postcard',{...postcard(),code:'wrong'},{ip:'192.0.2.10'})).status,403);
+  const put=f.env.MEDIA.put;f.env.MEDIA.put=async()=>{throw Error('private storage diagnostic');};assert.equal((await f.request('/api/guest-postcard',postcard(),{ip:'192.0.2.11'})).status,503);f.env.MEDIA.put=put;assert.equal(sent.length,0);
+  const accepted=await f.request('/api/guest-postcard',postcard(),{ip:'192.0.2.12'});assert.equal(accepted.status,201);const id=(await accepted.json()).id;await Promise.all(f.pending);assert.equal(sent.length,1);assert.equal(sent[0].pendingRows,1);assert.deepEqual(JSON.parse(sent[0].options.body),{contract:1,event:'postcard_received'});assert.equal(sent[0].options.headers.Cookie,undefined);assert.equal(sent[0].options.headers.Referer,undefined);
+  for(let n=0;n<2;n++)assert.equal((await f.request('/api/moderate',{id,status:'approved'},{token:f.env.OWNER_API_TOKEN})).status,200);await Promise.all(f.pending);assert.equal(sent.length,1);
+  assert.equal((await f.request('/api/guest-postcard',postcard(),{ip:'192.0.2.13',verification:true})).status,201);await Promise.all(f.pending);assert.equal(sent.length,1);
+ }finally{globalThis.fetch=original;f.sqlite.close();}
+});
+test('receipt recording outage cannot change successful submission or expose diagnostics',async()=>{
+ const f=fixture('/guestbook');const original=globalThis.fetch;try{await f.configure();f.env.USAGE_ENDPOINT='https://counts.example.test/api/usage/guestbook';f.env.USAGE_TOKEN='b'.repeat(48);globalThis.fetch=async()=>{throw Error('private analytics diagnostic');};const response=await f.request('/api/guest-postcard',postcard());assert.equal(response.status,201);await Promise.all(f.pending);assert.equal(f.sqlite.prepare("SELECT COUNT(*) n FROM photos WHERE status='pending'").get().n,1);assert.doesNotMatch(await response.text(),/private analytics/);
+ }finally{globalThis.fetch=original;f.sqlite.close();}
 });

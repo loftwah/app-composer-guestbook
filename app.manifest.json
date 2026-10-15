@@ -2,7 +2,7 @@
   "contract": 1,
   "id": "guestbook",
   "name": "Here / there",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "repository": "https://github.com/loftwah/app-composer-guestbook",
   "runtime": "cloudflare-worker",
   "entry": "src/worker.ts",
