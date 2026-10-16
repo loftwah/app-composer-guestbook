@@ -122,3 +122,11 @@ header .composer-return .composer-context{display:block;margin-top:3px;font:12px
 
 @media(max-width:740px){header{gap:12px}header .composer-return--secondary{margin-left:auto;font-size:14px;gap:7px}header .app-tools kbd{display:none}header .app-tools a{display:none}header .app-tools button{font-size:14px}header .app-tools{justify-content:flex-start}}
 @media(max-width:360px){header .composer-return--secondary>span{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}header .composer-return--secondary{min-width:44px;justify-content:center}}
+
+/* Keep public app identity and everyday controls in one compact row. */
+header.app-header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+header.app-header .app-tools{width:auto;flex-wrap:nowrap;margin-left:auto;gap:4px;justify-content:flex-end}
+header.app-header>nav:not(.app-tools){order:3;width:100%;gap:8px 20px}
+@media(max-width:700px){header.app-header{padding-block:12px}header.app-header>.brand,header.app-header>strong,header.app-header>a>strong{font-size:20px}header.app-header .brand img{width:28px;height:28px}header.app-header .app-tools [data-open-apps]{padding-inline:10px}}
+
+@media(max-width:700px){header.app-header .app-tools kbd{display:none}}
