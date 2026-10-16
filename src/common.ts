@@ -2,6 +2,7 @@ export interface BaseEnv {
   DB: D1Database;
   OWNER_API_TOKEN: string;
   PUBLIC_ORIGIN: string;
+  OWNER_STUDIO_URL?: string;
 }
 export const escape = (s: unknown) =>
   String(s ?? "").replace(
@@ -202,6 +203,19 @@ export async function commonAPI(
   base: string,
   name: string,
 ) {
+  // This instance can use an existing identity-protected management surface.
+  // A redirect grants no app session or API authority; independent installs omit it.
+  if ((path === "/owner" || path === "/owner/") && env.OWNER_STUDIO_URL && ["GET", "HEAD"].includes(req.method)) {
+    let destination: URL;
+    try {
+      destination = new URL(env.OWNER_STUDIO_URL);
+      if (destination.protocol !== "https:" || destination.username || destination.password || destination.hash || destination.href.length > 2048) throw Error();
+      if (destination.origin === new URL(req.url).origin && [path, base + path].includes(destination.pathname)) throw Error();
+    } catch {
+      return error("The owner management destination needs operator review.", 503);
+    }
+    return new Response(null, {status:302, headers:{Location:destination.href, "Cache-Control":"no-store", "X-Robots-Tag":"noindex, nofollow"}});
+  }
   if (req.method !== "POST") return null;
   if (
     req.headers.get("Origin") !== new URL(req.url).origin &&

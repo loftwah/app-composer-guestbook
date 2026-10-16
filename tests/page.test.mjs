@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { html } from "../src/common.ts";
+import { html, commonAPI } from "../src/common.ts";
 test("public page keeps escaped content, exact canonical and explicit social images", async () => {
   const response = html(
     "Fixture <img onerror=evil()>",
@@ -60,4 +60,22 @@ test("social image resolves inside the actual app mount",async()=>{
  assert.match(body,/property="og:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/guestbook-share-v2.jpg"/);
  assert.match(body,/name="twitter:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/guestbook-share-v2.jpg"/);
  assert.match(body,/og:image:width" content="1200"/);
+});
+
+
+test("configured owner entry redirects to existing SSO without creating app authority or reading data", async () => {
+ const destination="https://composer.loftwah.com/_emdash/admin/plugins/composer-miniapps/apps?app=guestbook";
+ const env={OWNER_STUDIO_URL:destination,get DB(){throw Error("Owner redirect must not read app data");}};
+ for(const base of["","/guestbook"])for(const method of["GET","HEAD"]){
+  const response=await commonAPI(new Request("https://example.test"+base+"/owner?next=https://evil.test",{method}),env,"/owner",base,"fixture_session");
+  assert.equal(response.status,302);assert.equal(response.headers.get("Location"),destination);assert.equal(response.headers.get("Set-Cookie"),null);assert.equal(response.headers.get("Cache-Control"),"no-store");assert.equal(await response.text(),"");
+ }
+ assert.equal(await commonAPI(new Request("https://example.test/owner"),{},"/owner","","fixture_session"),null);
+ assert.equal(await commonAPI(new Request("https://example.test/api/export"),env,"/api/export","","fixture_session"),null);
+});
+
+test("invalid owner destinations fail closed and request query data cannot choose a destination",async()=>{
+ for(const destination of["javascript:alert(1)","http://insecure.test/","https://user:secret@example.test/","https://example.test/owner","https://composer.loftwah.com/manage#fragment"]){
+  const response=await commonAPI(new Request("https://example.test/owner"),{OWNER_STUDIO_URL:destination},"/owner","","fixture_session");assert.equal(response.status,503);assert.equal(response.headers.get("Set-Cookie"),null);assert.equal(response.headers.get("Location"),null);
+ }
 });
