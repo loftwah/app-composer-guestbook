@@ -27,7 +27,8 @@
     "head_sampling_rate": 0.1
   },
   "vars": {
-    "PUBLIC_ORIGIN": "https://guestbook.loftwah.com"
+    "PUBLIC_ORIGIN": "https://guestbook.loftwah.com",
+    "OWNER_STUDIO_URL": "https://composer.loftwah.com/_emdash/admin/plugins/composer-miniapps/apps?app=guestbook"
   },
   "r2_buckets": [
     {

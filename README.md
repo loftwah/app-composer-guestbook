@@ -6,7 +6,7 @@ An original, independently deployable guestbook mini-app. MIT. Reviewed 13 Octob
 
 Versioned contract: `app.manifest.json`. Generic provider API: `/api/items` and `/api/items/:id`, contract 1; only currently public approved items are returned. Media and item queries send no-store, so source revocation applies on the next controlled request. A downloaded copy cannot be recalled.
 
-Owner signs in at `/owner` with the runtime credential. Public browsing works without Composer. Owner photo uploads remain invitation/owner-only. An optional guest postcard path is closed by default: the owner can enable it in configuration, and the public puzzle code `hunter2` permits new pending postcards only. It never signs a guest into the owner studio. No anonymous multi-tenant promise. Composition mounts this service under its manifest route. Data remains with the app, never inside Composer.
+Owner entry is `/owner`. This instance sets `OWNER_STUDIO_URL` to its existing Cloudflare-protected Composer editor, selecting this app. The redirect creates no app session and grants no API permission. Independent installations omit that optional variable and retain the local runtime-credential studio. Public registration is not added. Public browsing works without Composer. Owner photo uploads remain invitation/owner-only. An optional guest postcard path is closed by default: the owner can enable it in configuration, and the public puzzle code `hunter2` permits new pending postcards only. It never signs a guest into the owner studio. No anonymous multi-tenant promise. Composition mounts this service under its manifest route. Data remains with the app, never inside Composer.
 
 ## Public project standard
 
