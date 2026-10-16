@@ -1,0 +1,8 @@
+/* MIT. Current theme is the icon; the stable toggle name exposes its state. */
+button.theme-control{display:inline-grid;place-items:center;flex:none;inline-size:44px;block-size:44px;min-inline-size:44px;min-block-size:44px;padding:0;border:0;border-radius:6px;background:transparent!important;color:inherit;cursor:pointer;vertical-align:middle}
+button.theme-control:hover{background:color-mix(in srgb,currentColor 9%,transparent)!important}
+button.theme-control:focus-visible{outline:2px solid var(--accent,var(--color-accent,currentColor));outline-offset:3px}
+button.theme-control svg{inline-size:20px;block-size:20px;pointer-events:none}
+.theme-control [data-theme-glyph=light]{display:none}
+html[data-theme=light] .theme-control [data-theme-glyph=light]{display:block}
+html[data-theme=light] .theme-control [data-theme-glyph=dark]{display:none}

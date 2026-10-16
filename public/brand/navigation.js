@@ -6,10 +6,11 @@ const theme = document.querySelector("#reader-theme");
 const app = document.documentElement.dataset.app;
 const key = document.documentElement.dataset.themeKey || app + ":reader-theme";
 function themeLabel() {
-  theme.textContent =
-    document.documentElement.dataset.theme === "light"
-      ? "Dark mode"
-      : "Light mode";
+  const control = theme;
+  const dark = document.documentElement.dataset.theme !== "light";
+  control.setAttribute("aria-label", "Dark theme");
+  control.setAttribute("aria-pressed", String(dark));
+  control.title = dark ? "Switch to light theme" : "Switch to dark theme";
 }
 themeLabel();
 theme.addEventListener("click", () => {
