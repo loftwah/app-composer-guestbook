@@ -98,10 +98,12 @@
         document.documentElement.classList.remove("launcher-open");
         window.scrollTo({ left: scrollPosition.x, top: scrollPosition.y, behavior: "instant" });
     }
-    function open(focusSearch = false) {
+    function open(focusSearch = false, returnFocus = null) {
         if (!dialog || dialog.open)
             return;
-        lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : trigger;
+        // Safari does not focus buttons on pointer activation. Remember the
+        // actual trigger for click opening; shortcut opening retains the prior field.
+        lastFocus = returnFocus ?? (document.activeElement instanceof HTMLElement ? document.activeElement : trigger);
         lockPage();
         fit();
         if (search)
@@ -116,7 +118,7 @@
         if (dialog?.open)
             dialog.close();
     }
-    trigger.addEventListener("click", () => open());
+    trigger.addEventListener("click", () => open(false, trigger));
     closeButton?.addEventListener("click", close);
     dialog.addEventListener("close", () => {
         unlockPage();
@@ -131,6 +133,21 @@
         if (event.clientX < bounds.left || event.clientX > bounds.right ||
             event.clientY < bounds.top || event.clientY > bounds.bottom)
             close();
+    });
+    // Safari can omit links from sequential keyboard focus when Full Keyboard
+    // Access is disabled. Keep Tab within the menu with the same visible controls.
+    dialog.addEventListener("keydown", event => {
+        if (event.key !== "Tab")
+            return;
+        const controls = [...dialog.querySelectorAll('a[href], button, input, select, textarea, [tabindex="0"]')].filter(control => !control.matches(":disabled, [hidden]") && control.getClientRects().length > 0);
+        if (!controls.length)
+            return;
+        const index = controls.indexOf(document.activeElement);
+        const next = event.shiftKey
+            ? (index <= 0 ? controls.length - 1 : index - 1)
+            : (index + 1) % controls.length;
+        event.preventDefault();
+        controls[next].focus();
     });
     // Escape uses the browser's native modal cancel path and the close handler.
     document.addEventListener("keydown", event => {
