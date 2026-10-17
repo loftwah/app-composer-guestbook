@@ -18,7 +18,8 @@ import {
 } from "./common.ts";
 import { sanitisePNG } from "./png.ts";
 import {guestDefaults, submitPostcard} from "./guest.ts";
-interface Env extends BaseEnv, PublisherEnv {
+import { resourceEnabled, resourceRoutes, type ResourceEnv } from './resources.ts';
+interface Env extends BaseEnv, PublisherEnv, ResourceEnv {
   MEDIA: R2Bucket;
   ASSETS?: Fetcher;
 }
@@ -51,6 +52,8 @@ const app = {
         base = basePath(u, "guestbook"),
         path = u.pathname.slice(base.length) || "/";
       const owner = await authorised(req, env, "guestbook_session");
+      const resource = await resourceRoutes(req, env, base, path, BUILD_SHA);
+      if (resource) return resource;
       const common = await commonAPI(req, env, path, base, "guestbook_session");
       if (common) return common;
       if (path === "/api/guest-postcard" && req.method === "POST")
@@ -61,6 +64,10 @@ const app = {
           revision: BUILD_SHA,
           contract: 1,
           dataVersion: 1,
+          resourceContract: 1,
+          resourcesEnabled: resourceEnabled(env),
+          resourceAccount: env.RESOURCE_ACCOUNT_ID ?? null,
+          resourceEnvironment: env.RESOURCE_ENVIRONMENT ?? null,
         });
       if (path === "/app.manifest.json") return json(MANIFEST);
       if (path === "/api/items" && req.method === "GET") {

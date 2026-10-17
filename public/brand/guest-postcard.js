@@ -5,7 +5,6 @@
   const status = document.querySelector('#postcard-status');
   const fieldset = form.querySelector('fieldset');
   const button = form.querySelector('button');
-  const base = location.pathname.startsWith('/guestbook/') ? '/guestbook' : '';
   const context = canvas.getContext('2d');
   if (!context) { status.textContent = 'Your browser could not prepare a postcard. Try another browser; nothing was sent.'; return; }
   let busy = false, sent = false;
@@ -44,7 +43,7 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
-      const response = await fetch(base + '/api/guest-postcard', {signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const response = await fetch(form.action, {signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'The postcard was not accepted. Keep your message and try again.');
       sent = true; status.textContent = result.message; button.textContent = 'Postcard sent';
