@@ -42,15 +42,15 @@ components:
 
 **Creative North Star: "The guestbook letterbox"**
 
-Keep the built editorial collection: Space headings, charcoal or warm-light surfaces, orange actions and one cut-paper screenprint hero. Guest postcards extend that world with paper, ink and a visible preview. Here / there remains the guestbook identity; Linkarooie names the related collection destination. Owner titles, introductions, layouts and theme settings remain authoritative.
+Keep the built editorial collection: Space headings, charcoal or warm-light surfaces, orange actions and one ink-line cel animation hero. Guest postcards extend that world with paper, ink and a visible preview. Here / there remains the guestbook identity; Linkarooie names the related collection destination. Owner titles, introductions, layouts and theme settings remain authoritative.
 
 **Key Characteristics:**
-- Original self-hosted cut-paper illustration, explicitly separate from submitted contributions.
+- Original self-hosted ink-line cel animation illustration, explicitly separate from submitted contributions.
 - Flat collection sections, native controls and readable contribution text.
 - A paper postcard preview within the existing interface, in either theme.
 - Honest states: an empty collection says so plainly, hides search, and offers the action that actually exists.
 
-Source truth is `src/common.ts`, `src/worker.ts`, `public/brand/navigation.css` and `public/brand/guest-postcard.js`. Artwork provenance is `public/brand/herethere-art-v3.PROVENANCE.txt`; keep its master, 480/960px WebP sources, reserved dimensions, social derivatives, the 96px navigation crop and the adjacent licence/font notices. It also records the assets this release removed. No new artwork or visual identity is introduced here.
+Source truth is `src/common.ts`, `src/worker.ts`, `public/brand/navigation.css` and `public/brand/guest-postcard.js`. Artwork provenance is `public/brand/herethere-art-v4.PROVENANCE.txt`; keep its master, 480/960px WebP sources, reserved dimensions, social derivatives, the 96px navigation crop and the adjacent licence/font notices. It also records the assets this release removed. No new artwork or visual identity is introduced here.
 
 Retained local fictional browser captures in `.private/postcard-captures/` cover `final-form-{390,1728}-{dark,light}.png` and `detail-{390,1728}-{dark,light}.png`. They document form/preview layout, focus appearance and long-caption wrapping; screenshots alone do not prove submission, approval or revocation interactions. Production release/pin promotion, physical-device and screen-reader acceptance remain separate gates.
 

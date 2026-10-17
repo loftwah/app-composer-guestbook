@@ -42,6 +42,29 @@ for(const base of ['', '/guestbook']) test('guest pending → owner approve → 
     for(const path of ['/api/items/'+saved.id,'/media/'+saved.id,'/item/'+saved.id])assert.equal((await f.request(path,null,{token:'hunter2'})).status,404);
   } finally {f.sqlite.close();}
 });
+test('an unavailable item URL is an HTML 404 while the JSON API keeps its error contract',async()=>{
+  const f=fixture('/guestbook');try{
+    const missing=await f.request('/item/does-not-exist');
+    assert.equal(missing.status,404);
+    assert.match(missing.headers.get('content-type')??'',/^text\/html/);
+    const page=await missing.text();
+    assert.match(page,/<h1>This postcard is not available<\/h1>/);
+    assert.match(page,/It is unpublished, private or has been removed\./);
+    assert.match(page,/Back to the collection/);
+    assert.match(page,/<html lang="en" data-app="guestbook"/);
+    assert.match(page,/id="app-navigation"/);
+    assert.match(page,/Here \/ there by Loftwah/);
+    const apiMissing=await f.request('/api/items/does-not-exist');
+    assert.equal(apiMissing.status,404);
+    assert.match(apiMissing.headers.get('content-type')??'',/^application\/json/);
+    await f.configure();
+    const pending=(await(await f.request('/api/guest-postcard',postcard())).json()).id;
+    for(const path of['/item/'+pending,'/api/items/'+pending]){
+      const response=await f.request(path);assert.equal(response.status,404,path);
+      assert.match(response.headers.get('content-type')??'',path.startsWith('/item/')?/^text\/html/:/^application\/json/);
+    }
+  }finally{f.sqlite.close();}
+});
 test('the public code cannot log in, write owner settings/moderation/uploads/pause, export or read private media',async()=>{
   const f=fixture();try {
     await f.configure();const id=(await(await f.request('/api/guest-postcard',postcard())).json()).id;
@@ -112,7 +135,7 @@ test('an empty collection states the truth, hides search and offers only the act
     assert.match(empty,/Nothing is published yet\. A postcard appears here once the owner approves it\./);
     assert.match(empty,/href="\/guestbook\/contribute">Leave the first postcard<\/a>/);
     assert.match(empty,/<p><a class="button" href="\/guestbook\/contribute">Leave a postcard<\/a><\/p><\/div>/);
-    assert.match(empty,/herethere-art-v3-960\.webp/);
+    assert.match(empty,/herethere-art-v4-960\.webp/);
     assert.doesNotMatch(empty,/Explore the moments|id="gallery-search"|id="gallery-count"|id="gallery-empty"|data-gallery-item|guestbook-character-v2|guestbook-share-v2/);
     for(const ip of ['192.0.2.21','192.0.2.22']){
       const accepted=await f.request('/api/guest-postcard',postcard(),{ip});assert.equal(accepted.status,201);

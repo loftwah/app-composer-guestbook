@@ -1,0 +1,45 @@
+Original App Composer illustration — Here / there
+Reviewed 17 October 2026.
+
+Source: one generated raster, "tile-herethere-v5", produced through the fal.ai queue endpoint
+openai/gpt-image-2.5/sunburst/text-to-image under MP's authorisation, request
+01a14911-cb3d-7180-a3de-78d40764a8ad. The prompt, the full job record and the export commands are
+recorded in the owning App Composer repository at .artwork/tiles-v5.json,
+.artwork/masters/tile-herethere-v5.result.json and .artwork/export-v5.sh. FAL_AI_API_KEY is read
+from the local environment by scripts/generate-app-art.mjs; it is never printed, never written to a
+manifest, never committed and never shipped to the browser.
+
+Art direction (supersedes the rejected 17 October cut-paper set): original adult-animated science
+fiction with confident dark ink contours, varied expressive line weight, hard-edged cel shading in
+two flat tone steps, drawn perspective and one clear focal event. Scene: inside a welcoming
+interplanetary visitor station, a tall friendly alien visitor pins a postcard-sized photo onto a
+collection wall already covered in pinned postcards while a tiny round robot porter carries an
+absurdly tall stack of cards beside the counter, one slipping off; warm coral and burnt orange
+over deep ink navy, with restrained cyan only on a small control panel and one lamp. Entirely
+illustrated by hand; no photograph, no 3D render, no glossy plastic, no gradients, no glow haze and
+no text baked into the image.
+
+Files in this repository, all exported from the master at review time:
+- herethere-art-v4-master.png — the reviewed master, square; byte-identical to the reviewed
+  .artwork/masters/tile-herethere-v5.png recorded by App Composer.
+- herethere-art-v4-480.webp and herethere-art-v4-960.webp — 480px and 960px page hero derivatives
+  with a reserved 1:1 layout box.
+- herethere-share-v4.jpg — 1200x630 JPEG social derivative, composed with deterministic typography
+  from the reviewed master. The same bytes are this app's card in the App Composer catalogue.
+- herethere-share-v4.webp and herethere-share-v4-600.webp — 1200x630 and 600x315 WebP variants.
+- apps/herethere-small-v4.webp — 96px navigation crop of the same artwork.
+
+The illustration is separate from the collection: it is never presented as a real photo or a real
+guest.
+
+mark.svg and icon.png are authored, not generated: hand-written SVG geometry in the same family
+grammar (ivory tile, ink border, one ink subject and one accent — here a tilted postcard with an
+orange stamp and a small round accent), plus a 512px rendering of that mark for the apple-touch
+icon.
+
+Superseded in this release and removed from the repository: the 17 October 2026 cut-paper
+herethere-art-v3 master, 480/960 derivatives, share cards, 96px crop and the earlier mixed-set
+removals recorded by the v3 provenance note. Their bytes and prompts remain in this repository's
+git history.
+
+Licence for these original project assets: MIT, like this repository.
