@@ -173,7 +173,7 @@
         link.addEventListener("click", close);
     // Navigation restored from the browser's page cache must not keep a modal or
     // stale fixed-body lock over the page, including modified/new-tab clicks.
-    window.addEventListener("pageshow", () => { if (dialog.open)
+    window.addEventListener("pageshow", event => { if (event.persisted && dialog.open)
         close(); });
     for (const image of dialog.querySelectorAll("li img")) {
         const missing = () => image.setAttribute("data-launcher-missing", "");

@@ -323,4 +323,4 @@ html.launcher-open {
 }
 
 #app-navigation:has(.launcher-all)[open] { grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
-input, textarea, select { font-size: max(16px, 1rem); }
+html:root :is(input, textarea, select) { font-size: max(16px, 1rem); }
