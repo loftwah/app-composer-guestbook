@@ -4,15 +4,26 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "check": "tsc --noEmit",
+    "dev": "pnpm source:write && node scripts/run-worker.mjs dev",
+    "check": "pnpm check:types && pnpm lint && pnpm format:check && pnpm test",
     "deploy": "node scripts/deploy.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "test:page": "node --experimental-strip-types --test tests/page.test.mjs"
+    "test:page": "node --experimental-strip-types --test tests/page.test.mjs",
+    "source:write": "node scripts/build-source.mjs --write",
+    "check:types": "node scripts/build-source.mjs --check",
+    "lint": "node scripts/build-source.mjs --lint",
+    "format:check": "node scripts/format-source.mjs --check",
+    "format": "node scripts/format-source.mjs --write",
+    "build": "pnpm check:types && node scripts/run-worker.mjs build"
   },
   "devDependencies": {
     "wrangler": "4.143.1",
     "typescript": "6.0.3",
-    "@cloudflare/workers-types": "5.20260929.1"
+    "@cloudflare/workers-types": "5.20260929.1",
+    "prettier": "3.9.10"
+  },
+  "packageManager": "pnpm@12.8.1",
+  "engines": {
+    "node": ">=22 <23"
   }
 }

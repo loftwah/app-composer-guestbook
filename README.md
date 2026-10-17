@@ -1,12 +1,18 @@
 # Here / there
 
-An original, independently deployable guestbook mini-app. MIT. Reviewed 13 October 2026.
+Here / there collects photos and guest postcards for an owner to review before publishing. Visitors browse approved moments; owners control moderation and revoke controlled media at its source. It runs independently and provides approved public items to Linkarooie. MIT.
 
-`pnpm install; pnpm check; pnpm dev`. Deployment: provision isolated D1 and private R2, apply `migrations/0001.sql`, set `OWNER_API_TOKEN` with Wrangler secret input, then `pnpm deploy`. No GitHub Actions. Secrets never belong in source.
+[Development commands and source ownership](ENGINEERING.md).
+
+`pnpm install --frozen-lockfile; pnpm check; pnpm dev`. Deployment: provision isolated D1 and private R2, apply `migrations/0001.sql`, set `OWNER_API_TOKEN` with Wrangler secret input, then `pnpm deploy`. No GitHub Actions. Secrets never belong in source.
 
 Versioned contract: `app.manifest.json`. Generic provider API: `/api/items` and `/api/items/:id`, contract 1; only currently public approved items are returned. Media and item queries send no-store, so source revocation applies on the next controlled request. A downloaded copy cannot be recalled.
 
 Owner entry is `/owner`. This instance sets `OWNER_STUDIO_URL` to its existing Cloudflare-protected Composer editor, selecting this app. The redirect creates no app session and grants no API permission. Independent installations omit that optional variable and retain the local runtime-credential studio. Public registration is not added. Public browsing works without Composer. Owner photo uploads remain invitation/owner-only. An optional guest postcard path is closed by default: the owner can enable it in configuration, and the public puzzle code `hunter2` permits new pending postcards only. It never signs a guest into the owner studio. No anonymous multi-tenant promise. Composition mounts this service under its manifest route. Data remains with the app, never inside Composer.
+
+![Here / there public collection, captured in a real browser with fictional fixtures](docs/images/public-collection.png)
+
+This screenshot shows the actual public app with fictional local contributions.
 
 ## Public project standard
 

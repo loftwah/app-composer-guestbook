@@ -192,9 +192,10 @@ export function html(
     },
   );
 }
-export function client(base: string, cookie: string) {
-  return `<script>const base=${JSON.stringify(base)};const output=document.querySelector('main [role=status]');async function api(path,data){const res=await fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const value=await res.json();if(!res.ok)throw new Error(value.error||'Request failed');return value;}function report(e){if(output)output.textContent=e.message||e;}document.querySelector('#login')?.addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/login',{token:new FormData(e.target).get('token')});location.reload();}catch(e){report(e);}});document.querySelector('#logout')?.addEventListener('click',async()=>{try{await api('/api/logout',{});location.reload();}catch(e){report(e);}});document.querySelector('#config')?.addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/config',Object.fromEntries(new FormData(e.target)));location.reload();}catch(e){report(e);}});</script>`;
+export function client(base: string, _cookie: string) {
+  return `<script type="module" data-owner-client data-base="${escape(base)}" src="${base}/brand/owner.js"></script>`;
 }
+
 export function configForm(c: Record<string, any>) {
   return `<form id="config"><fieldset><legend>Make it yours</legend><label>Title<input name="title" maxlength="80" value="${escape(c.title)}" required></label><label>Introduction<textarea name="intro" maxlength="240">${escape(c.intro)}</textarea></label><label>Theme<select name="theme"><option ${c.theme === "daylight" ? "selected" : ""}>daylight</option><option ${c.theme === "midnight" ? "selected" : ""}>midnight</option></select></label><label>Layout<select name="layout"><option ${c.layout === "grid" ? "selected" : ""}>grid</option><option ${c.layout === "editorial" ? "selected" : ""}>editorial</option></select></label><label>Guest contributions<select name="guestAccess"><option value="closed" ${c.guestAccess !== 'postcards' ? 'selected' : ''}>Closed</option><option value="postcards" ${c.guestAccess === 'postcards' ? 'selected' : ''}>Postcards with guest code</option></select></label><p class="small">The public puzzle code is hunter2. Guests can only send new pending postcards: 2 per connection per 15 minutes, 8 per day in total, with a 16-item review queue. Your owner credential stays separate.</p><button>Save configuration</button></fieldset></form>`;
 }
