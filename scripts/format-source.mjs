@@ -11,6 +11,7 @@ const files = [
     .map((file) => "src/browser/" + file),
   "scripts/deploy.mjs",
   "tests/deploy-source.test.mjs",
+  "tests/deployment-config.test.mjs",
   "scripts/run-worker.mjs",
   "scripts/build-source.mjs",
   "scripts/format-source.mjs",

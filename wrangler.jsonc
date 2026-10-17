@@ -28,7 +28,9 @@
   },
   "vars": {
     "PUBLIC_ORIGIN": "https://guestbook.loftwah.com",
-    "OWNER_STUDIO_URL": "https://composer.loftwah.com/_emdash/admin/plugins/composer-miniapps/apps?app=guestbook"
+    "OWNER_STUDIO_URL": "https://composer.loftwah.com/_emdash/admin/plugins/composer-miniapps/apps?app=guestbook",
+    "RESOURCE_ACCOUNT_ID": "1003dc1d93af0ebea56b2f1252f89627",
+    "RESOURCE_ENVIRONMENT": "production"
   },
   "r2_buckets": [
     {
@@ -41,5 +43,21 @@
     "binding": "ASSETS",
     "run_worker_first": true
   },
-  "preview_urls": false
+  "preview_urls": false,
+  "env": {
+    "preview": {
+      "workers_dev": false,
+      "preview_urls": false,
+      "routes": [],
+      "vars": {
+        "PUBLIC_ORIGIN": "",
+        "OWNER_STUDIO_URL": "",
+        "RESOURCE_ACCOUNT_ID": "",
+        "RESOURCE_ENVIRONMENT": ""
+      },
+      "d1_databases": [],
+      "r2_buckets": [],
+      "services": []
+    }
+  }
 }

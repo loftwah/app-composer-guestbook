@@ -65,6 +65,24 @@ unchanged();
 execFileSync("pnpm", ["check"], { stdio: "inherit" });
 execFileSync("pnpm", ["build"], { stdio: "inherit" });
 unchanged();
+// Apply only this reviewed app's forward migrations to the explicit root DB.
+// A failed migration aborts here; source changes during it must stop upload too.
+execFileSync(
+  "pnpm",
+  [
+    "wrangler",
+    "d1",
+    "migrations",
+    "apply",
+    "DB",
+    "--remote",
+    "--config",
+    "wrangler.jsonc",
+    "--env=",
+  ],
+  { stdio: "inherit" },
+);
+unchanged();
 execFileSync(
   "pnpm",
   [

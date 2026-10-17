@@ -4,7 +4,7 @@ Here / there collects photos and guest postcards for an owner to review before p
 
 [Development commands and source ownership](ENGINEERING.md).
 
-`pnpm install --frozen-lockfile; pnpm check; pnpm dev`. Deployment: provision isolated D1 and private R2, apply `migrations/0001.sql`, set `OWNER_API_TOKEN` with Wrangler secret input, then `pnpm deploy`. No GitHub Actions. Secrets never belong in source.
+`pnpm install --frozen-lockfile; pnpm check; pnpm dev`. Deployment: provision isolated D1 and private R2, set `OWNER_API_TOKEN` with Wrangler secret input, then `pnpm deploy` from the exact reviewed pushed main. The guarded release checks/builds, applies pending forward D1 migrations from `migrations/` to the explicitly selected production `DB`, rechecks source identity and only then uploads. No GitHub Actions. Secrets never belong in source.
 
 Versioned contract: `app.manifest.json`. Generic provider API: `/api/items` and `/api/items/:id`, contract 1; only currently public approved items are returned. Media and item queries send no-store, so source revocation applies on the next controlled request. A downloaded copy cannot be recalled.
 
@@ -55,3 +55,11 @@ The committed `public/brand/launcher.js` and `launcher.css` follow Composer's ma
 Family typography and launcher refinement, reviewed 18 October 2026: headings use the selected self-hosted Latin Space Grotesk variable font; CSS and preload name the same versioned local asset. The Linkarooie launcher thumbnail uses the reviewed curator crop. Superseded assets remain available. Source and byte provenance: [`public/brand/family-assets-20261018.md`](public/brand/family-assets-20261018.md).
 
 Identity/sharing refinement, 18 October 2026: the app now serves dated optical PNG icons and purpose-first share cards derived from its existing illustration. All five launcher thumbnails are dated local copies. Prior immutable assets and owner configuration are retained; provenance and exact hashes are in `public/brand/identity-sharing-20261018.json`.
+
+## Owned Guestbook release settings
+
+The root production configuration explicitly selects this app’s existing account and `RESOURCE_ENVIRONMENT=production` for the authenticated owned-Guestbook contract. Without both resource identity variables the feature remains off in app code; public metadata never grants write permission. Composer must present the matching workspace/account/environment/source/target proof and its server-only app credential. Existing owner configuration, photos and moderation remain app-owned.
+
+The named `preview` environment is intentionally unprovisioned: resource variables are empty, routes and Workers.dev are disabled, and D1/R2/service bindings are explicitly empty. It cannot inherit the production resources. An operator must select distinct preview storage and runtime identity before enabling that environment; default production release commands explicitly select root `wrangler.jsonc` with `--env=`.
+
+`pnpm deploy` runs `pnpm wrangler d1 migrations apply DB --remote --config wrangler.jsonc --env=` after checks/build and a source recheck. Migration failure aborts before upload; another full source/config/ref recheck follows migration. Migrations `0001.sql` and `0002_owned_resources.sql` are forward-only and idempotent (`IF NOT EXISTS`): the second adds isolated resource/configuration/operation/item tables without copying or altering legacy photos/settings/media. Code rollback must retain these tables and their data; never run a destructive down-migration.
