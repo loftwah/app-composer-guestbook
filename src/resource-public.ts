@@ -48,10 +48,12 @@ async function submitResourcePostcard(req: Request, env: ResourceEnv, resource: 
     .bind(`resource:${resource.id}:guest-day:${day}`, (day + 1) * 86400000).first();
   if (!admitted) return error('Today’s postcard limit is reached. Keep your message and try tomorrow.', 429);
   const id = crypto.randomUUID(), key = resourceMediaKey(resource.id, id);
+  let insertionAttempted = false;
   try {
     await env.MEDIA.put(key, cleaned.bytes, { httpMetadata: { contentType: 'image/png' } });
     // The current active configuration and safety controls are authoritative,
     // even when the visitor opened an older activated configuration URL.
+    insertionAttempted = true;
     const inserted = await env.DB.prepare(`INSERT INTO guestbook_resource_items(id,resource_id,caption,author,status)
       SELECT ?,?,?,?,'pending' WHERE EXISTS(
         SELECT 1 FROM guestbook_resources r JOIN guestbook_resource_configs c ON c.resource_id=r.id AND c.revision=r.active_revision
@@ -65,6 +67,17 @@ async function submitResourcePostcard(req: Request, env: ResourceEnv, resource: 
     }
     return json({ id, resource: resource.id, status: 'pending', message: 'Your postcard is with the owner. It stays private unless they approve it.' }, 201);
   } catch {
+    if (insertionAttempted) {
+      try {
+        const committed = await env.DB.prepare('SELECT id FROM guestbook_resource_items WHERE resource_id=? AND id=? AND caption=? AND author=?')
+          .bind(resource.id, id, caption, author).first();
+        if (committed) return json({ id, resource: resource.id, status: 'pending', message: 'Your postcard is with the owner. It stays private unless they approve it.' }, 201);
+      } catch { /* An unavailable reconciliation read cannot prove rollback. */ }
+      // A failed database acknowledgement may follow a committed insert. Keep
+      // its private scoped object while the outcome is unknown; deleting it
+      // would destroy a potentially accepted contribution.
+      return json({ id, resource: resource.id, outcome: 'unknown', message: 'Your postcard may already be waiting for review. Keep your message and check before sending it again.' }, 503);
+    }
     try { await env.MEDIA.delete(key); } catch { /* No item grants access to an uncommitted object. */ }
     return error('The postcard could not be stored. Keep your message and check before retrying.', 503);
   }

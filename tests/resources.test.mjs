@@ -254,3 +254,43 @@ test('source drift after staging refuses activation at the app write boundary', 
     assert.match(await (await f.request(`/r/${resourceA}/c/${a.configuration.revision}/`, null, { owner: false })).text(), /Previous usable page/);
   } finally { globalThis.BUILD_SHA = source; f.close(); }
 });
+
+for (const mode of ['confirmed', 'unknown']) test('a lost item-insert acknowledgement preserves media: ' + mode, async () => {
+  const f = fixture();
+  try {
+    const resource = await f.create(resourceA, 'Preserve accepted media');
+    const prepare = f.env.DB.prepare;
+    f.env.DB.prepare = sql => {
+      const statement = prepare(sql), bind = statement.bind;
+      statement.bind = (...values) => {
+        const bound = bind(...values), first = bound.first;
+        if (sql.startsWith('INSERT INTO guestbook_resource_items')) bound.first = async () => { await first(); throw Error('insert acknowledgement lost after commit'); };
+        if (mode === 'unknown' && sql.startsWith('SELECT id FROM guestbook_resource_items WHERE resource_id=? AND id=? AND caption=')) bound.first = async () => { throw Error('reconciliation unavailable'); };
+        return bound;
+      };
+      return statement;
+    };
+    const response = await f.request(`/r/${resourceA}/api/guest-postcard`, postcard('Accepted despite lost acknowledgement'), { owner: false });
+    assert.equal(response.status, mode === 'confirmed' ? 201 : 503);
+    const result = await response.json();
+    if (mode === 'unknown') assert.equal(result.outcome, 'unknown');
+    f.env.DB.prepare = prepare;
+    const stored = f.sqlite.prepare('SELECT id,status FROM guestbook_resource_items WHERE resource_id=?').get(resourceA);
+    assert.equal(stored.id, result.id); assert.equal(stored.status, 'pending');
+    assert.equal(f.objects.has(`resources/${resourceA}/photos/${stored.id}.png`), true);
+    assert.equal((await f.command(resourceA, 'moderate', { expectedVersion: resource.resource.version, item: stored.id, itemRevision: 1, status: 'approved' })).status, 200);
+    assert.equal((await f.request(`/r/${resourceA}/media/${stored.id}`, null, { owner: false })).status, 200);
+  } finally { f.close(); }
+});
+
+test('a definitive object-storage failure creates no item and cleans its generated key', async () => {
+  const f = fixture();
+  try {
+    await f.create(resourceA, 'Storage failure');
+    f.env.MEDIA.put = async (key, bytes) => { f.objects.set(key, bytes); throw Error('storage acknowledgement unavailable before database insert'); };
+    const response = await f.request(`/r/${resourceA}/api/guest-postcard`, postcard('Not inserted'), { owner: false });
+    assert.equal(response.status, 503);
+    assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM guestbook_resource_items').get().n, 0);
+    assert.equal(f.objects.size, 0);
+  } finally { f.close(); }
+});
