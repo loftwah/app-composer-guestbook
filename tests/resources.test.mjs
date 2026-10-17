@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
+import { runInNewContext } from 'node:vm';
 import worker from '../src/worker.ts';
 
 const source = 'a'.repeat(40), account = '1003dc1d93af0ebea56b2f1252f89627';
@@ -296,3 +297,75 @@ test('a definitive object-storage failure creates no item and cleans its generat
     assert.equal(f.objects.size, 0);
   } finally { f.close(); }
 });
+
+for (const base of ['', '/guestbook']) {
+  test('the checked postcard controller submits the actual scoped form action: ' + (base || 'standalone'), async () => {
+    const f = fixture(base);
+    try {
+      await f.create(resourceA, 'Controller resource A');
+      await f.create(resourceB, 'Controller resource B');
+      const page = await (await f.request(`/r/${resourceA}/c/1/contribute`, null, { owner: false })).text();
+      const action = page.match(/<form id="guest-postcard" method="post" action="([^"]+)"/)?.[1];
+      assert.equal(action, `${base}/r/${resourceA}/api/guest-postcard`);
+      const expected = new URL(action, f.env.PUBLIC_ORIGIN).href;
+      const values = new Map(Object.entries({ code: 'hunter2', caption: 'Controller-owned fictional postcard', author: 'Fictional visitor', consent: true }));
+      const listeners = new Map();
+      const button = { disabled: true, textContent: '' };
+      const fieldset = { disabled: false };
+      let focused = false;
+      const status = { textContent: '', focus() { focused = true; } };
+      const form = {
+        action: expected,
+        elements: { namedItem(name) { return { value: values.get(name) }; } },
+        querySelector(selector) { return selector === 'button' ? button : fieldset; },
+        addEventListener(name, listener) { listeners.set(name, listener); },
+      };
+      const canvas = {
+        getContext() {
+          return { fillRect() {}, strokeRect() {}, fillText() {}, measureText(text) { return { width: text.length * 20 }; } };
+        },
+        toDataURL() { return 'data:image/png;base64,' + png(); },
+      };
+      let requested, responseStatus;
+      const browser = {
+        document: { querySelector(selector) { return { '#guest-postcard': form, '#postcard-canvas': canvas, '#postcard-status': status }[selector]; } },
+        window: { addEventListener() {} },
+        location: { pathname: `${base}/r/${resourceA}/c/1/contribute` },
+        FormData: class {
+          get(name) { return values.get(name) ?? null; }
+          has(name) { return values.has(name); }
+        },
+        AbortController, setTimeout, clearTimeout,
+        console: { info() {} },
+        async fetch(url, options) {
+          requested = new URL(url, f.env.PUBLIC_ORIGIN).href;
+          const headers = new Headers(options.headers);
+          headers.set('Origin', f.env.PUBLIC_ORIGIN);
+          headers.set('CF-Connecting-IP', '192.0.2.55');
+          const response = await worker.fetch(new Request(requested, { ...options, headers }), f.env, { waitUntil() {} });
+          responseStatus = response.status;
+          return response;
+        },
+      };
+      runInNewContext(readFileSync(new URL('../public/brand/guest-postcard.js', import.meta.url), 'utf8'), browser);
+      assert.equal(button.disabled, false);
+      await listeners.get('submit')({ preventDefault() {} });
+      assert.equal(requested, expected, 'the maintained browser controller must not fall back to the global postcard API');
+      assert.equal(responseStatus, 201);
+      assert.equal(focused, true);
+      assert.equal(button.textContent, 'Postcard sent');
+      assert.equal(button.disabled, true);
+      const item = f.sqlite.prepare('SELECT id,resource_id,status FROM guestbook_resource_items').get();
+      assert.equal(item.resource_id, resourceA);
+      assert.equal(item.status, 'pending');
+      assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM photos').get().n, 0, 'the legacy owner collection stays untouched');
+      assert.equal(f.objects.has(`resources/${resourceA}/photos/${item.id}.png`), true);
+      for (const path of [`/r/${resourceA}/media/${item.id}`, `/r/${resourceB}/media/${item.id}`, `/media/${item.id}`]) {
+        assert.equal((await f.request(path, null, { owner: false })).status, 404, path);
+      }
+      const guestApproval = await f.command(resourceA, 'moderate', { expectedVersion: 2, item: item.id, itemRevision: 1, status: 'approved' }, { owner: false });
+      assert.equal(guestApproval.status, 401, 'a guest submission does not grant moderation authority');
+      assert.deepEqual(f.sqlite.prepare('PRAGMA foreign_key_check').all(), []);
+    } finally { f.close(); }
+  });
+}
