@@ -45,5 +45,18 @@ for (let attempt = 0; attempt < 12; attempt++) {
   await new Promise((resolve) => setTimeout(resolve, 1500));
 }
 if (!verified) throw new Error("Live source identity did not converge");
-await verifySharing("https://guestbook.loftwah.com");
+// Assets can briefly 404 while a new deployment propagates to the edge. Retry the
+// sharing probe so a slow asset upload cannot look like a broken social card.
+let sharingVerified = false;
+for (let attempt = 0; attempt < 8; attempt++) {
+  try {
+    await verifySharing("https://guestbook.loftwah.com");
+    sharingVerified = true;
+    break;
+  } catch (error) {
+    if (attempt === 7) throw error;
+  }
+  await new Promise((resolve) => setTimeout(resolve, 2500));
+}
+if (!sharingVerified) throw new Error("Live sharing card did not converge");
 console.log("Verified live guestbook " + sha);
