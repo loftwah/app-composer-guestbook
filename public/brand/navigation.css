@@ -59,3 +59,14 @@ header.app-header>nav:not(.app-tools){order:3;width:100%;gap:8px 20px}
 @media(max-width:700px){header.app-header{padding-block:12px}header.app-header>.brand,header.app-header>strong,header.app-header>a>strong{font-size:20px}header.app-header .brand img{width:28px;height:28px}header.app-header .app-tools [data-open-apps]{padding-inline:10px}}
 
 @media(max-width:700px){header.app-header .app-tools kbd{display:none}}
+
+/* The standalone collection keeps its own optical identity beside its title. */
+header .guestbook-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  font: 600 20px/1.2 Space, system-ui, sans-serif;
+}
+header .guestbook-brand img { display: block; flex-shrink: 0; width: 36px; height: 36px; }
+header .guestbook-brand strong { font: inherit; overflow-wrap: anywhere; }

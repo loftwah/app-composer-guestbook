@@ -57,15 +57,15 @@ test("mounted navigation and saved theme stay in the composition before painting
 // A composed route must share its own art rather than another host's root asset.
 test("social image resolves inside the actual app mount",async()=>{
  const body=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
- assert.match(body,/property="og:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/herethere-share-v4.jpg"/);
- assert.match(body,/name="twitter:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/herethere-share-v4.jpg"/);
+ assert.match(body,/property="og:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/herethere-share-20261018.jpg"/);
+ assert.match(body,/name="twitter:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/herethere-share-20261018.jpg"/);
  assert.match(body,/og:image:width" content="1200"/);
 });
 
 // The switcher must show each app's current crop and its own name, never a superseded set.
-test("app switcher uses the reviewed v4 crops and current app names",async()=>{
+test("app switcher uses the reviewed app crops and current app names",async()=>{
  const body=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
- for(const crop of["herethere","linkarooie","linkcheck","hello","carryforward"])assert.match(body,new RegExp('/guestbook/brand/apps/'+crop+'-small-v4\\.webp'));
+ for(const crop of["herethere-small-20261018","linkarooie-small-20261018","linkcheck-small-20261018","hello-small-20261018","carryforward-small-20261018"])assert.match(body,new RegExp('/guestbook/brand/apps/'+crop+'\\.webp'));
  assert.match(body,/Carry \/ forward<small>Portable assistant memory<\/small>/);
  assert.match(body,/Here \/ there<small>Photo guestbook<\/small>/);
  assert.doesNotMatch(body,/Portable AI State|small-v1\.webp|small-v2\.webp|small-v3\.webp|creators\/linkarooie-kangaroo-v1/);

@@ -5,16 +5,11 @@
     "moduleResolution": "bundler",
     "strict": true,
     "skipLibCheck": true,
-    "lib": [
-      "ES2022",
-      "WebWorker"
-    ],
-    "types": [
-      "@cloudflare/workers-types"
-    ],
-    "allowImportingTsExtensions": true
+    "lib": ["ES2022"],
+    "types": ["@cloudflare/workers-types"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.mts"],
+  "exclude": ["src/browser", "src/shared"]
 }

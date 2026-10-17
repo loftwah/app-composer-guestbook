@@ -18,7 +18,8 @@ import {
 } from "./common.ts";
 import { sanitisePNG } from "./png.ts";
 import {guestDefaults, submitPostcard} from "./guest.ts";
-interface Env extends BaseEnv, PublisherEnv {
+import { resourceEnabled, resourceRoutes, type ResourceEnv } from './resources.ts';
+interface Env extends BaseEnv, PublisherEnv, ResourceEnv {
   MEDIA: R2Bucket;
   ASSETS?: Fetcher;
 }
@@ -51,6 +52,8 @@ const app = {
         base = basePath(u, "guestbook"),
         path = u.pathname.slice(base.length) || "/";
       const owner = await authorised(req, env, "guestbook_session");
+      const resource = await resourceRoutes(req, env, base, path, BUILD_SHA);
+      if (resource) return resource;
       const common = await commonAPI(req, env, path, base, "guestbook_session");
       if (common) return common;
       if (path === "/api/guest-postcard" && req.method === "POST")
@@ -61,6 +64,10 @@ const app = {
           revision: BUILD_SHA,
           contract: 1,
           dataVersion: 1,
+          resourceContract: 1,
+          resourcesEnabled: resourceEnabled(env),
+          resourceAccount: env.RESOURCE_ACCOUNT_ID ?? null,
+          resourceEnvironment: env.RESOURCE_ENVIRONMENT ?? null,
         });
       if (path === "/app.manifest.json") return json(MANIFEST);
       if (path === "/api/items" && req.method === "GET") {
@@ -236,7 +243,7 @@ const app = {
         ).all();
         return html(
           String(config.title),
-          `<h1>The guestbook studio.</h1><p>Approval makes a contribution public. Hiding or deletion revokes all controlled media and Showcase paths on the next request. Downloaded copies cannot be recalled.</p><div class="row"><button id="logout" class="secondary">Sign out</button><a href="${base}/api/export">Export gallery metadata</a></div><p role="status" aria-live="polite" class="message"></p>${configForm(config)}<p>Guest postcards: ${config.guestAccess === "postcards" ? (config.submissionsPaused ? "paused" : "open, pending approval") : "closed"}. The guest code never grants owner access.</p><h2>Add a moment</h2><form id="upload"><label>Image<input type="file" name="image" accept="image/*" required></label><p class="small">Your browser removes metadata and resizes to 1200 pixels. The server independently validates a PNG up to 1 MB.</p><label>Image description<input name="caption" maxlength="160" required></label><label>Name or alias (optional)<input name="author" maxlength="60"></label><label><input name="consent" type="checkbox" required style="display:inline;width:auto"> I have permission to publish this image.</label><button>Submit for review</button></form><h2>Review contributions</h2><div class="gallery">${results.map((p: any) => `<article><img src="${base}/media/${escape(p.id)}" alt="${escape(p.caption)}" loading="lazy"><h3>${escape(p.caption)}</h3><span class="badge">${escape(p.status)}</span><div class="row">${["approved", "hidden", "rejected", "deleted"].map((status) => `<button data-id="${escape(p.id)}" data-status="${status}" class="secondary">${({ approved: "Publish", hidden: "Hide", rejected: "Reject", deleted: "Delete" } as any)[status]}</button>`).join("")}</div></article>`).join("")}</div>${client(base, "guestbook_session")}<script>document.querySelectorAll('[data-status]').forEach(b=>b.addEventListener('click',async()=>{if(b.dataset.status==='deleted'&&!confirm('Delete the original photo? This cannot be undone.'))return;try{await api('/api/moderate',{id:b.dataset.id,status:b.dataset.status});location.reload();}catch(e){report(e);}}));document.querySelector('#upload').addEventListener('submit',async e=>{e.preventDefault();const button=e.target.querySelector('button');button.disabled=true;try{const f=new FormData(e.target),file=f.get('image');if(file.size>10000000)throw new Error('Choose an image under 10 MB');const image=await createImageBitmap(file);const scale=Math.min(1,1200/image.width,1200/image.height),canvas=document.createElement('canvas');canvas.width=Math.round(image.width*scale);canvas.height=Math.round(image.height*scale);canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);const png=canvas.toDataURL('image/png').split(',')[1];image.close();const v=await api('/api/upload',{png,caption:f.get('caption'),author:f.get('author'),consent:f.has('consent')});output.textContent=v.message;e.target.reset();}catch(e){report(e);}finally{button.disabled=false;}});</script>`,
+          `<h1>The guestbook studio.</h1><p>Approval makes a contribution public. Hiding or deletion revokes all controlled media and Showcase paths on the next request. Downloaded copies cannot be recalled.</p><div class="row"><button id="logout" class="secondary">Sign out</button><a href="${base}/api/export">Export gallery metadata</a></div><p role="status" aria-live="polite" class="message"></p>${configForm(config)}<p>Guest postcards: ${config.guestAccess === "postcards" ? (config.submissionsPaused ? "paused" : "open, pending approval") : "closed"}. The guest code never grants owner access.</p><h2>Add a moment</h2><form id="upload"><label>Image<input type="file" name="image" accept="image/*" required></label><p class="small">Your browser removes metadata and resizes to 1200 pixels. The server independently validates a PNG up to 1 MB.</p><label>Image description<input name="caption" maxlength="160" required></label><label>Name or alias (optional)<input name="author" maxlength="60"></label><label><input name="consent" type="checkbox" required style="display:inline;width:auto"> I have permission to publish this image.</label><button>Submit for review</button></form><h2>Review contributions</h2><div class="gallery">${results.map((p: any) => `<article><img src="${base}/media/${escape(p.id)}" alt="${escape(p.caption)}" loading="lazy"><h3>${escape(p.caption)}</h3><span class="badge">${escape(p.status)}</span><div class="row">${["approved", "hidden", "rejected", "deleted"].map((status) => `<button data-id="${escape(p.id)}" data-status="${status}" class="secondary">${({ approved: "Publish", hidden: "Hide", rejected: "Reject", deleted: "Delete" } as any)[status]}</button>`).join("")}</div></article>`).join("")}</div>${client(base, "guestbook_session")}`,
           base,
           "guestbook",
           String(config.theme),
