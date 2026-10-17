@@ -63,9 +63,9 @@ test("social image resolves inside the actual app mount",async()=>{
 });
 
 // The switcher must show each app's current crop and its own name, never a superseded set.
-test("app switcher uses the reviewed v4 crops and current app names",async()=>{
+test("app switcher uses the reviewed app crops and current app names",async()=>{
  const body=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
- for(const crop of["herethere","linkarooie","linkcheck","hello","carryforward"])assert.match(body,new RegExp('/guestbook/brand/apps/'+crop+'-small-v4\\.webp'));
+ for(const crop of["herethere-small-v4","linkarooie-small-20261018","linkcheck-small-v4","hello-small-v4","carryforward-small-v4"])assert.match(body,new RegExp('/guestbook/brand/apps/'+crop+'\\.webp'));
  assert.match(body,/Carry \/ forward<small>Portable assistant memory<\/small>/);
  assert.match(body,/Here \/ there<small>Photo guestbook<\/small>/);
  assert.doesNotMatch(body,/Portable AI State|small-v1\.webp|small-v2\.webp|small-v3\.webp|creators\/linkarooie-kangaroo-v1/);
