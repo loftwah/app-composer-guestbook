@@ -74,6 +74,9 @@ search.addEventListener("keydown", (e) => {
 const gallerySearch=document.querySelector('#gallery-search');
 if(gallerySearch){
  const items=[...document.querySelectorAll('[data-gallery-item]')],type=document.querySelector('#gallery-type'),status=document.querySelector('#gallery-count'),empty=document.querySelector('#gallery-empty');
- function filterGallery(){let count=0;for(const item of items){item.hidden=!(item.textContent.toLowerCase().includes(gallerySearch.value.trim().toLowerCase())&&(!type?.value||item.dataset.kind===type.value));if(!item.hidden)count++;}status.textContent=`${count} ${count===1?'item':'items'} shown`;empty.hidden=items.length===0||count!==0;}
+ function filterGallery(){const query=gallerySearch.value.trim().toLowerCase(),kind=type?.value||'';let count=0;for(const item of items){item.hidden=!(item.textContent.toLowerCase().includes(query)&&(!kind||item.dataset.kind===kind));if(!item.hidden)count++;}
+  const filtering=query!==''||kind!=='';
+  if(status)status.textContent=filtering?`${count} of ${items.length} ${items.length===1?'item':'items'} shown`:'';
+  if(empty)empty.hidden=items.length===0||count!==0;}
  gallerySearch.addEventListener('input',filterGallery);type?.addEventListener('change',filterGallery);filterGallery();
 }

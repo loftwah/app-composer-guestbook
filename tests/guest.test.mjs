@@ -104,6 +104,34 @@ test('public discovery and contribution form respect owner activation and pause,
   }finally{f.sqlite.close();}
 });
 
+test('an empty collection states the truth, hides search and offers only the action a visitor can take',async()=>{
+  const f=fixture('/guestbook');try{
+    await f.configure();
+    const empty=await(await f.request('/')).text();
+    assert.match(empty,/<h3>No published moments yet<\/h3>/);
+    assert.match(empty,/Nothing is published yet\. A postcard appears here once the owner approves it\./);
+    assert.match(empty,/href="\/guestbook\/contribute">Leave the first postcard<\/a>/);
+    assert.match(empty,/<p><a class="button" href="\/guestbook\/contribute">Leave a postcard<\/a><\/p><\/div>/);
+    assert.match(empty,/herethere-art-v3-960\.webp/);
+    assert.doesNotMatch(empty,/Explore the moments|id="gallery-search"|id="gallery-count"|id="gallery-empty"|data-gallery-item|guestbook-character-v2|guestbook-share-v2/);
+    for(const ip of ['192.0.2.21','192.0.2.22']){
+      const accepted=await f.request('/api/guest-postcard',postcard(),{ip});assert.equal(accepted.status,201);
+      const id=(await accepted.json()).id;assert.equal((await f.request('/api/moderate',{id,status:'approved'},{token:f.env.OWNER_API_TOKEN})).status,200);
+    }
+    const published=await(await f.request('/')).text();
+    assert.match(published,/href="#collection">Explore the moments<\/a>/);
+    assert.match(published,/href="\/guestbook\/contribute">Know the guest code\? Leave a postcard<\/a>/);
+    assert.match(published,/id="gallery-search"/);
+    assert.match(published,/Contributions are reviewed before they become public\./);
+    assert.doesNotMatch(published,/No published moments yet|Leave the first postcard/);
+    await f.request('/api/pause',{paused:true},{token:f.env.OWNER_API_TOKEN});
+    const closed=await(await f.request('/')).text();
+    assert.match(closed,/href="#collection">Explore the moments<\/a>/);
+    assert.match(closed,/href="\/guestbook\/owner">Owner studio<\/a>/);
+    assert.doesNotMatch(closed,/Leave a postcard|Know the guest code|Leave the first postcard/);
+  }finally{f.sqlite.close();}
+});
+
 test('stale older settings and pause writes cannot reopen an owner-closed or paused guestbook',async()=>{
   for(const mode of ['old-settings-close','old-settings-pause','pause-close']) {
     const f=fixture();let resume;
