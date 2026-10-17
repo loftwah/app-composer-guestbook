@@ -1,0 +1,68 @@
+{
+  "app": "guestbook",
+  "identity": "herethere",
+  "selectedBy": "coordinating implementation agent under delegated family refinement",
+  "date": "2026-10-18",
+  "generatedIdentitySelection": "exec-7682cf51-d5de-4d42-8091-a5958c88190c.png",
+  "drawingPurpose": "The existing alien hand pins a postcard for contribution and moderation.",
+  "shareCardPurpose": "Here / there: collect photos and messages for owner approval. An alien visitor pins a postcard onto a wall of contributions.",
+  "files": {
+    "public/brand/herethere-share-20261018.jpg": "d3f5ebd7bfbe7a266f289b33573f45054470f2d20c4458b62110116ff59c9b43",
+    "public/brand/herethere-share-20261018.webp": "add7ab5a1659480ba719443f7ff64fc933afebcba3f6c090ef3381e8e21550e1",
+    "public/brand/herethere-share-20261018-600.webp": "29c29d9efeec374270524344d440d137b13c335bc8e97ab36018cdac573e2053",
+    "public/brand/herethere-identity-20261018-master.png": "62c497b9e40513c2d651dc6dbcd95a03ec1a760b5b51ffbcee37e8aff0d7b1ff",
+    "public/brand/herethere-icon-20261018-16.png": "d569949eb1af107b8f529060d09c1f2550e7e0504b6329f3526ce09a0775bd5f",
+    "public/brand/herethere-icon-20261018-32.png": "7bfb9354e85d30d04bd027acc3e8120681b875b3ee564deddca7732e745ef85a",
+    "public/brand/herethere-icon-20261018-48.png": "8e2b07248aa4331da9bec86bbd31b2c7681613f3b118e4b9c21a8f01764aa250",
+    "public/brand/herethere-icon-20261018-96.png": "dcf426d1c0e8fba9d51fa5e76656cfdc146755a8b7d6e3eb63dc7ea98c183822",
+    "public/brand/herethere-icon-20261018-180.png": "c0ba334e967885c557074819623f06ff42cbc85af6e27f3b4be80315f614b229",
+    "public/brand/herethere-icon-20261018-192.png": "4a2100fe70484a3469f6a205f260be8c78e2a5def4dfd35dd457a1481a3a1e99",
+    "public/brand/herethere-icon-20261018-512.png": "2b77e0ee50c004e198529f027a4875ec58d6b7c20ac64f7370d6a2d6e3be285d",
+    "public/brand/apps/herethere-small-20261018.webp": "4fec95fe6cfccd8b901c8f424599f4cb57aea6ad2eb11f56e79b95a57260b568",
+    "public/brand/apps/linkcheck-small-20261018.webp": "be9d5e7b8f24ec6d8b8d073075e3208dbd3e68afc78ecc00c9184882f98b0326",
+    "public/brand/apps/hello-small-20261018.webp": "c2aef7354c04affc6060d095912307794cc5436acff8a45d26c913b989222db1",
+    "public/brand/apps/carryforward-small-20261018.webp": "d684c61b50c8f1c44eefc376c232fb9192c40d4b80365eb971a3ad1684add88c",
+    "public/brand/apps/linkarooie-small-20261018.webp": "b9b0cad6ce37c35a8a43899b30834bc001ae1a9c7acff4997a16467cd442d033",
+    "public/brand/composer-icon-20261018-96.png": "b20dd22c890237c48a1e47e81fef1e715b5d77968bdeeb624ba0eceb1ae47b66"
+  },
+  "sourceSceneMasterPreserved": true,
+  "configuredOwnerContentChanged": false,
+  "generationPrompt": {
+    "tool": "built-in image_gen",
+    "authority": "Agent-selected optical artwork based on the existing illustrated world. Qualified MP acceptance applies only to the locked Linkarooie curator; do not call the entire family MP-approved.",
+    "app": {
+      "prompt": "Use case: illustration-story. Asset type: one optical app identity icon for Here / there, a moderated photo-and-postcard guestbook. Input image is a STYLE AND OBJECT reference: the existing authored station-wall illustration. Produce an original close-up derived from its specific meaningful action: a long three-fingered teal alien hand is in the middle of pinning one slightly bent warm cream postcard onto a wall with a single burnt-orange thumbtack. The postcard contains one very simple orange otherworldly landscape: two moons and a jagged flat mesa, no lettering. The wrist enters from the upper right; a long fingertip is still pressing the pin. Clearly show pressure and that one tactile pinning moment. The hand and one postcard form a compact diagonal silhouette occupying 85 percent of the square. No character head, no smiling mascot, no generic map-pin symbol. Confident black ink contours, deliberate asymmetry, large readable cel-colour shapes, dry adult science-fiction animation craft. Restricted palette: warm cream, rust orange, faded teal; flat dark plum background. Keep tiny detail out: this must read at 32 pixels. No polished toy rendering, 3D, glass, shiny highlights, halos, ornamental circuitry, frame, rounded app tile, typography, logos or watermark. Preserve the existing world's hand anatomy, drawn materials and understated humour; design a clean optical illustration, not a busy crop of the whole scene.",
+      "reference": "brand/herethere-art-v4-master.png",
+      "intent": "A specific pinning gesture derived from the existing wall, rather than another mascot head."
+    },
+    "composerReturnIdentity": {
+      "prompt": "Use case: illustration-story. Create one optical application identity icon for App Composer, software assembled from independent apps. Input is the exact existing factory's machinery/style reference. One specific close-up moment: the peculiar black two-finger industrial robot gripper with orange circular knuckle is sliding a warm-cream plug-in application module into the waiting rail of another cream module; a little green status lamp has just lit where the contacts meet. Keep it visibly physical, with a broad dark side latch and one small cyan blank display, referencing the actual factory modules. Give the approaching gripper and two partially engaged modules a clear asymmetrical interlocking silhouette with an open gap, rather than a generic cube logo. Tight square, machinery fills85percent; broad readable contours, black confident ink, flat warm cream, muted orange joints, a single green lamp. Background plain deep charcoal plum. Adult science-fiction cel drawing, worn inventive machinery and dry practical charm. No character face, text, letters, UI, vendor branding, arbitrary interlocking-square pictogram, generic cube, frame, rounded app tile, cute robot, glossy toy rendering, 3D, glow halo, gradients or tiny circuitry. The device assembly action must read at32px.",
+      "reference": "brand/hero-composer-v5-1600.webp",
+      "intent": "Optical illustration of the existing app's specific action; no new character or hero replacement."
+    },
+    "source": {
+      "repository": "https://github.com/loftwah/app-composer",
+      "path": ".artwork/identity-prompts-20261018.json",
+      "sha256": "1dd7c4d5b826dd0d7406debd6a3489cd6599bd72e681d885eb843704d0055e62",
+      "gitBlob": "2515e0c67ab1603c56fa7d1a799d2bfd3dec04ef"
+    }
+  },
+  "preservedSceneSource": {
+    "path": "public/brand/herethere-art-v4-master.png",
+    "sha256": "070437a52021ec9684637b1a1d7393a4565d4a25b4ec1a81cad6e1e8d5b9a2ff"
+  },
+  "sharingRenderer": {
+    "repository": "https://github.com/loftwah/app-composer",
+    "renderer": ".artwork/og/render-card-templates.mjs",
+    "rendererSHA256": "2cd04451e8727544ac3cf36e1273f12a84f2df34bfcd2df28555ad60d282f7dd",
+    "template": ".artwork/og/share-card-v5.html",
+    "templateSHA256": "c43b78124cdb675e9cca3b7c5a61d364832aa4787f7de384c420b0b58d1a2349",
+    "renderRecordSHA256": "277b24e4b14e25a66ee6c9b305cba51ecef30d22bd32659f2e1d46d8fb18ca0e",
+    "fontSHA256": "61d00a1c57fcd7d4826c7a69cd85b61d15d133d5471d3c9c4731d70193d9f71f",
+    "dimensions": [
+      1200,
+      630
+    ],
+    "ledePixels": 32
+  }
+}
