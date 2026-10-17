@@ -1,0 +1,36 @@
+Original App Composer cut-paper artwork — Here / there
+Reviewed 17 October 2026.
+
+Source: one generated raster, "tile-herethere-v3", produced through the fal.ai queue endpoint
+openai/gpt-image-2.5/sunburst/text-to-image under MP's authorisation, request
+01a147da-cb4a-7942-b530-d856e77f72ea. The request itself, its prompt, the cost basis and the
+review of every rejected image are recorded in the owning App Composer repository at
+public/brand/apps/provenance.json and .artwork/manifests/tiles-direction-a.json.
+FAL_AI_API_KEY is read from the environment by scripts/generate-app-art.mjs; it is never printed,
+never written to a manifest, never committed and never shipped to the browser.
+
+Art direction: App Composer cut-paper screenprint — warm ivory paper #f4f0e8, graphite ink
+#252923, burnt orange #d95022, and one muted permission-green stamp square as the only secondary.
+Flat shapes, ink-lined paper edges, coarse screenprint grain, deliberate registration offset.
+No shading, perspective, gloss, gradients or glow. Subject: one burnt-orange postbox with a single
+ivory postcard entering the slot. The postcard is a promise of a contribution, never a claim that
+photos exist.
+
+Files in this repository, all exported from the master at review time:
+- herethere-art-v3-master.png — the reviewed master, square.
+- herethere-art-v3-480.webp and herethere-art-v3-960.webp — 480px and 960px page hero derivatives.
+- herethere-share-v3.jpg — 1200x630 JPEG social derivative.
+- herethere-share-v3.webp and herethere-share-v3-600.webp — 1200x630 and 600x315 WebP variants.
+- apps/herethere-small-v3.webp — 96px navigation crop.
+
+Dimensions are reserved in the markup. The illustration is explicitly separate from submitted
+contributions; it is never presented as a real photo or a real guest.
+
+Superseded in this release and removed from the repository: the 14 October 2026
+guestbook-character-v2 gouache illustration (600/1200px WebP and its social crop), the
+courtyard-ai-v1 social pair and the share-ai-v1 poster pair from the earlier generated set. They
+mixed glossy postcard renders with the current cut-paper grammar. Their bytes, prompts and the
+magpie-on-letterbox original remain in this repository's git history; the reviewed App Composer
+record keeps the comparison note.
+
+Licence for these original project assets: MIT, like this repository.
