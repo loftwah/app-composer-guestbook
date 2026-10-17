@@ -184,6 +184,10 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
     const id = match[1]!, proof = await identity(req, env, base, source);
     if (!['GET', 'POST'].includes(req.method)) throw new ResourceError('Use the supported resource request method.', 405);
     if (req.method === 'GET') {
+      const requestedOperation = new URL(req.url).searchParams.get('operation');
+      if (requestedOperation && operationId(requestedOperation) && !await env.DB.prepare('SELECT id FROM guestbook_resources WHERE id=?').bind(id).first()) {
+        return json({ contract: 1, recorded: false, current: null });
+      }
       const resource = await ownedResource(env.DB, id, proof);
       if (match[2]?.startsWith('media/')) {
         const item = await env.DB.prepare("SELECT id FROM guestbook_resource_items WHERE resource_id=? AND id=? AND status!='deleted'").bind(id, match[3]!).first();

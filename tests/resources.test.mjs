@@ -234,6 +234,7 @@ test('interrupted creation rolls back its resource identity and the same operati
     const command = { action: 'create', operationId: 'retryable-creation-0001' };
     assert.equal((await f.request('/api/resources/' + resourceA, command)).status, 503);
     assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM guestbook_resources').get().n, 0);
+    assert.deepEqual(await (await f.request(`/api/resources/${resourceA}?operation=${command.operationId}`)).json(), { contract: 1, recorded: false, current: null });
     f.sqlite.exec('DROP TRIGGER fail_receipt;');
     const first = await (await f.request('/api/resources/' + resourceA, command)).json();
     const retry = await (await f.request('/api/resources/' + resourceA, command)).json();
