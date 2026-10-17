@@ -83,7 +83,7 @@ const resultJSON = `json_object('contract',1,'outcome','applied','resource',json
   'id',r.id,'workspace',r.workspace_id,'account',r.account_id,'environment',r.environment,'target',r.target,
   'version',r.version,'activeRevision',r.active_revision,'visible',json(CASE r.visible WHEN 1 THEN 'true' ELSE 'false' END),
   'paused',json(CASE r.paused WHEN 1 THEN 'true' ELSE 'false' END)),
-  'configuration',CASE WHEN c.revision IS NULL THEN NULL ELSE json_object('revision',c.revision,'digest',c.digest,'source',c.source_revision) END)`;
+  'configuration',CASE WHEN c.revision IS NULL THEN NULL ELSE json_object('revision',c.revision,'digest',c.digest,'source',c.source_revision,'values',json(c.config_json)) END)`;
 const snapshotSelect = `SELECT ${resultJSON} AS snapshot FROM guestbook_resources r
   LEFT JOIN guestbook_resource_configs c ON c.resource_id=r.id AND c.revision=r.active_revision WHERE r.id=?`;
 

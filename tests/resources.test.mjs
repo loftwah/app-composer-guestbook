@@ -83,6 +83,7 @@ for (const base of ['', '/guestbook']) test('two real resource scopes keep indep
   try {
     const a = await f.create(resourceA, 'Fictional Trail Notes');
     const b = await f.create(resourceB, 'Fictional Launch Board');
+    assert.deepEqual(a.configuration.values, config('Fictional Trail Notes'), 'reuse/reconciliation can inherit app-confirmed values without trusting a local override');
     const pageA = `/r/${resourceA}/c/${a.configuration.revision}`;
     const pageB = `/r/${resourceB}/c/${b.configuration.revision}`;
     assert.match(await (await f.request(pageA + '/', null, { owner: false })).text(), /Fictional Trail Notes/);
