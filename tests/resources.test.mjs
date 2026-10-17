@@ -298,6 +298,63 @@ test('a definitive object-storage failure creates no item and cleans its generat
   } finally { f.close(); }
 });
 
+function postcardBrowser(action, fetch) {
+  const values = new Map(Object.entries({
+    code: 'hunter2', caption: 'Controller-owned fictional postcard',
+    author: 'Fictional visitor', consent: true,
+  }));
+  const listeners = new Map(), windowListeners = new Map();
+  const button = { disabled: true, textContent: '' };
+  const fieldset = { disabled: false };
+  const status = { textContent: '', focused: false, focus() { this.focused = true; } };
+  const form = {
+    action,
+    elements: { namedItem(name) { return { get value() { return values.get(name); } }; } },
+    querySelector(selector) { return selector === 'button' ? button : fieldset; },
+    addEventListener(name, listener) {
+      if (!listeners.has(name)) listeners.set(name, []);
+      listeners.get(name).push(listener);
+    },
+  };
+  const canvas = {
+    getContext() {
+      return { fillRect() {}, strokeRect() {}, fillText() {}, measureText(text) { return { width: text.length * 20 }; } };
+    },
+    toDataURL() { return 'data:image/png;base64,' + png(); },
+  };
+  const requests = [];
+  const browser = {
+    document: { querySelector(selector) { return { '#guest-postcard': form, '#postcard-canvas': canvas, '#postcard-status': status }[selector]; } },
+    window: { addEventListener(name, listener) { windowListeners.set(name, listener); } },
+    FormData: class {
+      get(name) { return values.get(name) ?? null; }
+      has(name) { return values.has(name); }
+    },
+    URL, AbortController, setTimeout, clearTimeout,
+    console: { info() {} },
+    async fetch(url, options) {
+      requests.push({ url, payload: JSON.parse(options.body) });
+      return fetch(url, options);
+    },
+  };
+  runInNewContext(readFileSync(new URL('../public/brand/guest-postcard.js', import.meta.url), 'utf8'), browser);
+  return {
+    button, fieldset, status, values, requests,
+    async submit() {
+      for (const listener of listeners.get('submit')) await listener({ preventDefault() {} });
+    },
+    input(name, value) {
+      values.set(name, value);
+      for (const listener of listeners.get('input')) listener({});
+    },
+    leavingWarns() {
+      let warned = false;
+      windowListeners.get('beforeunload')({ preventDefault() { warned = true; } });
+      return warned;
+    },
+  };
+}
+
 for (const base of ['', '/guestbook']) {
   test('the checked postcard controller submits the actual scoped form action: ' + (base || 'standalone'), async () => {
     const f = fixture(base);
@@ -308,53 +365,23 @@ for (const base of ['', '/guestbook']) {
       const action = page.match(/<form id="guest-postcard" method="post" action="([^"]+)"/)?.[1];
       assert.equal(action, `${base}/r/${resourceA}/api/guest-postcard`);
       const expected = new URL(action, f.env.PUBLIC_ORIGIN).href;
-      const values = new Map(Object.entries({ code: 'hunter2', caption: 'Controller-owned fictional postcard', author: 'Fictional visitor', consent: true }));
-      const listeners = new Map();
-      const button = { disabled: true, textContent: '' };
-      const fieldset = { disabled: false };
-      let focused = false;
-      const status = { textContent: '', focus() { focused = true; } };
-      const form = {
-        action: expected,
-        elements: { namedItem(name) { return { value: values.get(name) }; } },
-        querySelector(selector) { return selector === 'button' ? button : fieldset; },
-        addEventListener(name, listener) { listeners.set(name, listener); },
-      };
-      const canvas = {
-        getContext() {
-          return { fillRect() {}, strokeRect() {}, fillText() {}, measureText(text) { return { width: text.length * 20 }; } };
-        },
-        toDataURL() { return 'data:image/png;base64,' + png(); },
-      };
       let requested, responseStatus;
-      const browser = {
-        document: { querySelector(selector) { return { '#guest-postcard': form, '#postcard-canvas': canvas, '#postcard-status': status }[selector]; } },
-        window: { addEventListener() {} },
-        location: { pathname: `${base}/r/${resourceA}/c/1/contribute` },
-        FormData: class {
-          get(name) { return values.get(name) ?? null; }
-          has(name) { return values.has(name); }
-        },
-        AbortController, setTimeout, clearTimeout,
-        console: { info() {} },
-        async fetch(url, options) {
-          requested = new URL(url, f.env.PUBLIC_ORIGIN).href;
-          const headers = new Headers(options.headers);
-          headers.set('Origin', f.env.PUBLIC_ORIGIN);
-          headers.set('CF-Connecting-IP', '192.0.2.55');
-          const response = await worker.fetch(new Request(requested, { ...options, headers }), f.env, { waitUntil() {} });
-          responseStatus = response.status;
-          return response;
-        },
-      };
-      runInNewContext(readFileSync(new URL('../public/brand/guest-postcard.js', import.meta.url), 'utf8'), browser);
-      assert.equal(button.disabled, false);
-      await listeners.get('submit')({ preventDefault() {} });
+      const browser = postcardBrowser(expected, async (url, options) => {
+        requested = new URL(url, f.env.PUBLIC_ORIGIN).href;
+        const headers = new Headers(options.headers);
+        headers.set('Origin', f.env.PUBLIC_ORIGIN);
+        headers.set('CF-Connecting-IP', '192.0.2.55');
+        const response = await worker.fetch(new Request(requested, { ...options, headers }), f.env, { waitUntil() {} });
+        responseStatus = response.status;
+        return response;
+      });
+      assert.equal(browser.button.disabled, false);
+      await browser.submit();
       assert.equal(requested, expected, 'the maintained browser controller must not fall back to the global postcard API');
       assert.equal(responseStatus, 201);
-      assert.equal(focused, true);
-      assert.equal(button.textContent, 'Postcard sent');
-      assert.equal(button.disabled, true);
+      assert.equal(browser.status.focused, true);
+      assert.equal(browser.button.textContent, 'Postcard sent');
+      assert.equal(browser.button.disabled, true);
       const item = f.sqlite.prepare('SELECT id,resource_id,status FROM guestbook_resource_items').get();
       assert.equal(item.resource_id, resourceA);
       assert.equal(item.status, 'pending');
@@ -369,3 +396,117 @@ for (const base of ['', '/guestbook']) {
     } finally { f.close(); }
   });
 }
+
+test('a committed postcard with a lost insert acknowledgement remains private and blocks duplicate browser retries', async () => {
+  const f = fixture('/guestbook');
+  try {
+    const resource = await f.create(resourceA, 'Unknown receipt');
+    await f.create(resourceB, 'Other resource');
+    const prepare = f.env.DB.prepare;
+    f.env.DB.prepare = sql => {
+      const statement = prepare(sql), bind = statement.bind;
+      statement.bind = (...values) => {
+        const bound = bind(...values), first = bound.first;
+        if (sql.startsWith('INSERT INTO guestbook_resource_items')) bound.first = async () => {
+          await first();
+          throw Error('insert acknowledgement lost after commit');
+        };
+        if (sql.startsWith('SELECT id FROM guestbook_resource_items WHERE resource_id=? AND id=? AND caption=')) bound.first = async () => {
+          throw Error('reconciliation unavailable');
+        };
+        return bound;
+      };
+      return statement;
+    };
+    let responseStatus;
+    const browser = postcardBrowser(`${f.env.PUBLIC_ORIGIN}/guestbook/r/${resourceA}/api/guest-postcard`, async (url, options) => {
+      const response = await f.request(new URL(url).pathname.slice('/guestbook'.length), JSON.parse(options.body), { owner: false });
+      responseStatus = response.status;
+      return response;
+    });
+    await browser.submit();
+    assert.equal(responseStatus, 503);
+    const item = f.sqlite.prepare('SELECT id,resource_id,status FROM guestbook_resource_items').get();
+    assert.equal(item.status, 'pending');
+    assert.equal(item.resource_id, resourceA);
+    assert.match(browser.status.textContent, /Your postcard may already be waiting for review/);
+    assert.ok(browser.status.textContent.includes(`Reference: ${resourceA}/${item.id}.`));
+    assert.match(browser.status.textContent, /ask the owner to check whether it arrived before resending/);
+    assert.doesNotMatch(browser.status.textContent, /not accepted|try again/);
+    assert.equal(browser.button.disabled, true);
+    assert.equal(browser.status.focused, true);
+    assert.equal(browser.fieldset.disabled, false);
+    assert.equal(browser.values.get('caption'), 'Controller-owned fictional postcard');
+    assert.equal(browser.leavingWarns(), true);
+    await browser.submit();
+    browser.input('code', 'different code');
+    assert.equal(browser.button.disabled, true, 'changing a guest code cannot unlock an uncertain duplicate');
+    await browser.submit();
+    assert.equal(browser.requests.length, 1);
+    assert.equal(f.sqlite.prepare('SELECT COUNT(*) AS n FROM guestbook_resource_items').get().n, 1);
+    assert.equal(f.objects.size, 1);
+    f.env.DB.prepare = prepare;
+    for (const path of [`/r/${resourceA}/media/${item.id}`, `/r/${resourceB}/media/${item.id}`, `/media/${item.id}`]) {
+      assert.equal((await f.request(path, null, { owner: false })).status, 404, path);
+    }
+    assert.equal((await f.command(resourceA, 'moderate', { expectedVersion: resource.resource.version, item: item.id, itemRevision: 1, status: 'approved' })).status, 200);
+    assert.equal((await f.request(`/r/${resourceA}/media/${item.id}`, null, { owner: false })).status, 200);
+    assert.deepEqual(f.sqlite.prepare('PRAGMA foreign_key_check').all(), []);
+  } finally { f.close(); }
+});
+
+for (const [name, respond] of [
+  ['transport failure', async () => { throw Error('connection interrupted after sending'); }],
+  ['timeout', async () => { throw new DOMException('Timed out after sending', 'AbortError'); }],
+  ['malformed JSON', async () => new Response('{', { status: 201 })],
+  ['missing receipt', async () => Response.json({ message: 'Nothing to see here' }, { status: 201 })],
+  ['non-pending receipt', async () => Response.json({ id: 'fictional-postcard-0001', resource: resourceA, status: 'approved' }, { status: 201 })],
+  ['conflicting outcome', async () => Response.json({ id: 'fictional-postcard-0001', resource: resourceA, status: 'pending', outcome: 'refused' }, { status: 201 })],
+  ['wrong resource receipt', async () => Response.json({ id: 'fictional-postcard-0001', resource: resourceB, status: 'pending' }, { status: 201 })],
+  ['invalid receipt ID', async () => Response.json({ id: '<invalid>', resource: resourceA, status: 'pending' }, { status: 201 })],
+]) test('the checked controller preserves work and prevents uncertain replay after ' + name, async () => {
+  const browser = postcardBrowser(`https://guestbook.example.test/r/${resourceA}/api/guest-postcard`, respond);
+  await browser.submit();
+  assert.equal(browser.button.disabled, true);
+  assert.notEqual(browser.button.textContent, 'Postcard sent');
+  assert.match(browser.status.textContent, /may already be waiting for review/);
+  assert.match(browser.status.textContent, /No receipt reference was returned/);
+  assert.match(browser.status.textContent, /ask the owner to check/);
+  assert.equal(browser.values.get('caption'), 'Controller-owned fictional postcard');
+  assert.equal(browser.leavingWarns(), true);
+  await browser.submit();
+  assert.equal(browser.requests.length, 1);
+  browser.input('caption', 'A different, intentional postcard');
+  assert.equal(browser.button.disabled, false);
+  browser.input('caption', ' Controller-owned   fictional postcard ');
+  assert.equal(browser.button.disabled, true, 'cosmetic whitespace must not unlock an uncertain repeat');
+});
+
+test('each uncertain postcard remains blocked when another message also has no confirmed receipt', async () => {
+  const browser = postcardBrowser(`https://guestbook.example.test/r/${resourceA}/api/guest-postcard`, async () => { throw Error('response lost'); });
+  await browser.submit();
+  browser.input('caption', 'Another fictional message');
+  await browser.submit();
+  browser.input('caption', 'Controller-owned fictional postcard');
+  assert.equal(browser.button.disabled, true);
+  await browser.submit();
+  assert.equal(browser.requests.length, 2, 'a later unknown result cannot forget the earlier uncertain payload');
+});
+
+test('a definite guest-code refusal allows correction without claiming an uncertain submission', async () => {
+  const browser = postcardBrowser(`https://guestbook.example.test/r/${resourceA}/api/guest-postcard`, async () => Response.json({ error: 'That guest code did not fit. Your message is still here.' }, { status: 403 }));
+  await browser.submit();
+  assert.equal(browser.button.disabled, false);
+  assert.equal(browser.button.textContent, 'Send for approval');
+  assert.match(browser.status.textContent, /guest code did not fit/);
+  assert.doesNotMatch(browser.status.textContent, /may already|No receipt reference/);
+});
+
+test('a confirmed legacy global receipt still marks the postcard sent', async () => {
+  const browser = postcardBrowser('https://guestbook.example.test/guestbook/api/guest-postcard', async () => Response.json({ id: 'fictional-postcard-0001', status: 'pending', message: 'With the owner.' }, { status: 201 }));
+  await browser.submit();
+  assert.equal(browser.button.disabled, true);
+  assert.equal(browser.button.textContent, 'Postcard sent');
+  assert.equal(browser.status.textContent, 'With the owner.');
+  assert.equal(browser.leavingWarns(), false);
+});

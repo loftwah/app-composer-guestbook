@@ -15,9 +15,29 @@
         return;
     }
     let busy = false, sent = false;
+    const uncertain = new Map();
+    const uncertainMessages = () => [...uncertain.values()].join(" Earlier postcard: ");
     console.info("  [ postcard ]\nA familiar password joke opens the letterbox: hunter2\nGuest code → new pending postcard. Owner approval → public.\nSource: https://github.com/loftwah/app-composer-guestbook");
     const caption = form.elements.namedItem("caption");
     const authorField = form.elements.namedItem("author");
+    const resource = new URL(form.action).pathname.match(/\/r\/([a-z0-9-]{6,64})\/api\/guest-postcard$/)?.[1];
+    const contentKey = () => JSON.stringify([
+        caption.value.trim().replace(/\s+/gu, " "),
+        authorField.value.trim(),
+    ]);
+    const identifier = (value) => typeof value === "string" && /^[a-z0-9-]{6,64}$/.test(value);
+    function unknown(content, message, reference) {
+        const notice = message +
+            " " +
+            (reference
+                ? `Reference: ${resource ? resource + "/" : ""}${reference}. `
+                : "No receipt reference was returned. ") +
+            "Keep this page and ask the owner to check whether it arrived before resending. Your message is retained here.";
+        uncertain.set(content, notice);
+        status.textContent = uncertainMessages();
+        button.textContent = "Check with owner before resending";
+        sent = false;
+    }
     function draw() {
         if (!context)
             return;
@@ -61,6 +81,7 @@
     });
     window.addEventListener("beforeunload", (event) => {
         if (busy ||
+            uncertain.size > 0 ||
             (!sent &&
                 (caption.value.trim().replace(/\s+/gu, " ") ||
                     authorField.value.trim()))) {
@@ -70,8 +91,14 @@
     });
     form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        if (busy)
+        if (busy || sent)
             return;
+        const content = contentKey();
+        if (uncertain.has(content)) {
+            status.textContent = uncertainMessages();
+            button.disabled = true;
+            return;
+        }
         const values = new FormData(form);
         draw();
         const payload = {
@@ -95,40 +122,66 @@
                 body: JSON.stringify(payload),
             });
             const result = await response.json();
-            if (!result || typeof result !== "object")
+            if (!result || typeof result !== "object" || Array.isArray(result))
                 throw Error("The server returned an invalid postcard response.");
             const reply = result;
-            if (!response.ok)
-                throw new Error(typeof reply.error === "string"
-                    ? reply.error
-                    : "The postcard was not accepted. Keep your message and try again.");
+            const sameResource = resource
+                ? reply.resource === resource
+                : reply.resource === undefined;
+            const message = typeof reply.message === "string" && reply.message.length <= 1000
+                ? reply.message
+                : "The response did not confirm whether your postcard arrived. It may already be waiting for review.";
+            if (reply.outcome === "unknown") {
+                unknown(content, message, sameResource && identifier(reply.id) ? reply.id : undefined);
+                status.focus();
+                return;
+            }
+            if (!response.ok &&
+                response.status >= 400 &&
+                response.status < 500 &&
+                typeof reply.error === "string") {
+                status.textContent = reply.error;
+                button.textContent = "Send for approval";
+                return;
+            }
+            if (!response.ok ||
+                reply.outcome !== undefined ||
+                reply.status !== "pending" ||
+                !identifier(reply.id) ||
+                !sameResource)
+                throw Error("The server did not return a confirmed pending postcard receipt.");
             sent = true;
             status.textContent =
                 typeof reply.message === "string"
                     ? reply.message
                     : "Your postcard is waiting for owner review.";
+            if (uncertain.size > 0)
+                status.textContent += " Earlier postcard: " + uncertainMessages();
             button.textContent = "Postcard sent";
             status.focus();
         }
         catch (error) {
-            status.textContent =
-                error instanceof Error && error.name === "AbortError"
-                    ? "The connection timed out. Your postcard may already be waiting for review. Your message is retained here."
-                    : (error instanceof Error && error.message) ||
-                        "The connection failed. Your message is still here; try again when connected.";
-            button.textContent = "Send for approval";
+            unknown(content, error instanceof Error && error.name === "AbortError"
+                ? "The connection timed out. Your postcard may already be waiting for review."
+                : "The response did not confirm whether your postcard arrived. It may already be waiting for review.");
+            status.focus();
         }
         finally {
             clearTimeout(timeout);
             busy = false;
             fieldset.disabled = false;
-            button.disabled = sent;
+            button.disabled = sent || uncertain.has(contentKey());
         }
     });
     form.addEventListener("input", () => {
         if (!busy) {
-            button.disabled = false;
-            button.textContent = "Send for approval";
+            const blocked = uncertain.has(contentKey());
+            button.disabled = blocked;
+            button.textContent = blocked
+                ? "Check with owner before resending"
+                : "Send for approval";
+            if (uncertain.size > 0)
+                status.textContent = uncertainMessages();
         }
     });
     draw();
