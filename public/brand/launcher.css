@@ -1,0 +1,326 @@
+/* App Composer shared launcher — MIT.
+ *
+ * One launcher for Composer and every shipped mini-app. src/browser/launcher.ts and this stylesheet are the maintained source; each app commits and deploys its own
+ * copy through `pnpm ui:assets --check|--write` (see docs/source-maintenance.md).
+ * There is no cross-origin runtime dependency and no silent update.
+ *
+ * Markup contract (see the header of launcher.js):
+ *   [data-open-apps]                 trigger, >= 44x44, aria-haspopup="dialog"
+ *   dialog#app-navigation            the menu, aria-labelledby its own heading
+ *     .dialog-heading > h2           heading text
+ *     [data-close-apps]              Close, first focusable element, autofocus
+ *     label > input[type=search]     filter, >= 16px computed
+ *     [role=status]                  count or "No matches…"
+ *     ul > li[data-destination] > a  destination with optional img + span + small
+ *
+ * Geometry rules, in one place: the dialog is bounded to the visual viewport,
+ * only the destination list scrolls, Close and search never leave the screen,
+ * and the page behind cannot scroll or shift while the menu is open. Type sizes
+ * floor at 16px on editable controls so focusing one cannot trigger an
+ * automatic zoom, and they still grow with the reader's text preference.
+ */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html.launcher-open {
+  overflow: hidden;
+  scroll-behavior: auto;
+}
+
+.app-tools {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.app-tools [data-open-apps] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.app-tools [data-open-apps] svg {
+  flex-shrink: 0;
+}
+
+.app-tools kbd {
+  font: 12px system-ui, sans-serif;
+  margin-left: 2px;
+  color: var(--muted, var(--color-muted, #afb3bb));
+}
+
+#app-navigation {
+  position: fixed;
+  left: var(--launcher-left, 50%);
+  right: auto;
+  translate: -50% 0;
+  top: var(--launcher-top, 12px);
+  bottom: auto;
+  margin: 0;
+  width: min(540px, var(--launcher-width, calc(100vw - 24px)));
+  max-width: none;
+  max-height: none;
+  box-sizing: border-box;
+  border: 1px solid var(--control, var(--color-border, #797f8a));
+  border-radius: 14px;
+  background: var(--field, var(--color-field, #1d1f23));
+  color: var(--fg, var(--color-foreground, #f2f3f5));
+  padding-top: max(16px, env(safe-area-inset-top));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-left: max(16px, env(safe-area-inset-left));
+}
+
+#app-navigation[open] {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  height: var(--launcher-height, calc(100dvh - 24px));
+  overflow: hidden;
+}
+
+#app-navigation::backdrop {
+  background: rgb(0 0 0 / 0.65);
+}
+
+#app-navigation .dialog-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+#app-navigation h2 {
+  font-size: 20px;
+  line-height: 1.25;
+  margin: 0;
+  letter-spacing: -0.01em;
+  max-width: none;
+}
+
+#app-navigation button {
+  background: var(--surface, var(--color-surface, #23252a));
+  color: var(--fg, var(--color-foreground, #f2f3f5));
+  border: 1px solid var(--control, var(--color-border, #797f8a));
+  border-radius: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 16px;
+  font-size: 15px;
+}
+
+#app-navigation .dialog-heading button {
+  flex-shrink: 0;
+}
+
+#app-navigation label {
+  display: block;
+  margin: 16px 0 0;
+  font-size: 15px;
+  color: var(--muted, var(--color-muted, #afb3bb));
+}
+
+#app-navigation input {
+  width: 100%;
+  max-width: none;
+  margin: 6px 0 0;
+  min-height: 48px;
+  padding: 12px;
+  border: 1px solid var(--control, var(--color-border, #797f8a));
+  border-radius: 8px;
+  background: var(--field, var(--color-field, #1d1f23));
+  color: var(--fg, var(--color-foreground, #f2f3f5));
+  /* Floor at 16px so focus cannot trigger an automatic page zoom; still grows
+     with a larger reader text size. */
+  font-size: max(16px, 1rem);
+  line-height: 1.4;
+}
+
+#app-navigation [role="status"] {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted, var(--color-muted, #afb3bb));
+}
+
+#app-navigation[data-empty="true"] [role="status"] {
+  color: var(--fg, var(--color-foreground, #f2f3f5));
+}
+
+#app-navigation[data-empty="true"] ul {
+  display: none;
+}
+
+#app-navigation ul {
+  padding: 0;
+  margin: 8px 0 0;
+  list-style: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+#app-navigation ul:focus-visible {
+  outline: 3px solid var(--accent, var(--color-accent, #ff9b55));
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+#app-navigation li {
+  margin: 0;
+}
+
+#app-navigation li a {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  min-height: 64px;
+  font-size: 16px;
+  line-height: 1.35;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+#app-navigation li a:hover,
+#app-navigation li a:focus-visible {
+  background: var(--surface, var(--color-surface, rgba(127, 127, 127, 0.14)));
+}
+
+#app-navigation li a[aria-current="page"] {
+  background: var(--surface, var(--color-surface, rgba(127, 127, 127, 0.14)));
+  outline: 1px solid var(--control, var(--color-border, rgba(127, 127, 127, 0.4)));
+}
+
+#app-navigation li a > img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* A destination whose artwork is missing keeps the grid column, so the row
+   still lines up with its neighbours. */
+#app-navigation img[data-launcher-missing] {
+  visibility: hidden;
+}
+
+#app-navigation li a > .task-icon,
+#app-navigation li a > svg {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--surface, var(--color-surface, rgba(127, 127, 127, 0.14)));
+  color: currentColor;
+}
+
+#app-navigation li a:not(:has(> img, > .task-icon, > svg)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#app-navigation li a > span:not(.task-icon) {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+#app-navigation small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted, var(--color-muted, #afb3bb));
+  font-size: 13px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+#app-navigation a[aria-current="page"] > span:not(.task-icon)::after {
+  content: "Current";
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  background: var(--surface, var(--color-surface, rgba(127, 127, 127, 0.18)));
+}
+
+#app-navigation .launcher-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 12px;
+  border-top: 1px solid var(--control, var(--color-border, #797f8a));
+  flex-shrink: 0;
+}
+
+#app-navigation[data-empty="true"] .launcher-all {
+  border-top: 0;
+}
+
+@media (max-width: 600px) {
+  #app-navigation {
+    border-radius: 12px;
+    --launcher-gutter: 20px;
+  }
+
+  #app-navigation li a {
+    padding: 8px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #app-navigation[open] {
+    animation: launcher-in 140ms ease-out;
+  }
+
+  @keyframes launcher-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Shared shell controls never inherit small editable text from local labels. */
+.app-launcher [data-open-apps] { min-width: 44px; min-height: 44px; }
+#app-navigation :focus-visible { outline: 3px solid var(--accent, var(--color-accent, #ff9b55)); outline-offset: 2px; }
+@media (max-width: 740px), (pointer: coarse) {
+  [data-open-apps] kbd { display: none; }
+}
+@media (max-height: 480px) {
+  #app-navigation { padding-block: max(8px, env(safe-area-inset-top)); }
+  #app-navigation label { margin-top: 6px; }
+  #app-navigation input { min-height: 44px; padding-block: 8px; }
+  #app-navigation [role="status"] { margin-top: 6px; }
+}
+
+#app-navigation:has(.launcher-all)[open] { grid-template-rows: auto auto auto minmax(0, 1fr) auto; }
+html:root :is(input, textarea, select) { font-size: max(16px, 1rem); }
