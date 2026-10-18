@@ -1,0 +1,42 @@
+{
+  "capturedAt": "2026-10-18T01:11:19.744Z",
+  "kind": "actual production public UI; fictional content remains labelled by the app",
+  "records": [
+    {
+      "id": "guestbook",
+      "url": "https://guestbook.loftwah.com/",
+      "width": 1440,
+      "height": 960,
+      "source": "1ea82adbafac109be3a13d30071b39fddb925562",
+      "file": "docs/images/public-collection-20261018.png",
+      "requestOverrides": false,
+      "verificationHeader": true,
+      "title": "Loftwah's guestbook",
+      "heading": "Loftwah's guestbook",
+      "theme": "dark",
+      "overflow": false,
+      "appsButton": true,
+      "sha256": "15814c8d7b0afd744a076bbe4b393ec38d4864c8f56d6fcd19aaace37caeb89d",
+      "bytes": 642108,
+      "captureFile": "guestbook-1440.png"
+    },
+    {
+      "id": "guestbook",
+      "url": "https://guestbook.loftwah.com/",
+      "width": 390,
+      "height": 844,
+      "source": "1ea82adbafac109be3a13d30071b39fddb925562",
+      "file": "docs/images/public-collection-20261018-phone.png",
+      "requestOverrides": false,
+      "verificationHeader": true,
+      "title": "Loftwah's guestbook",
+      "heading": "Loftwah's guestbook",
+      "theme": "dark",
+      "overflow": false,
+      "appsButton": true,
+      "sha256": "c7ed71f748af4325871a6618ff64ff4bb4ffbe1b82c796b3d735265bbd5fb590",
+      "bytes": 256408,
+      "captureFile": "guestbook-390.png"
+    }
+  ]
+}
