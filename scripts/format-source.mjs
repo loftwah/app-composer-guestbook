@@ -7,6 +7,7 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const files = [
   "src/publisher.mts",
   "src/resource-enquiries.ts",
+  "public/brand/enquiry-form.css",
   ...readdirSync(resolve(root, "src"))
     .filter((file) => /^enquiry-.*\.ts$/.test(file))
     .map((file) => "src/" + file),
