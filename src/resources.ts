@@ -1,6 +1,8 @@
 import { authorised, error, json, readJSON, type BaseEnv } from './common.ts';
 import { object, resourceConfiguration } from './resource-config.ts';
 import { resourcePublicRoute } from './resource-public.ts';
+import { lineageEligibleSQL, lineageMediaAllowed } from './resource-lineage.ts';
+import { exportPortable, restorePortable, PortabilityError } from './resource-portability.ts';
 
 export interface ResourceEnv extends BaseEnv {
   MEDIA: R2Bucket;
@@ -142,7 +144,7 @@ async function mutateResource(db: D1Database, id: string, proof: ResourceIdentit
     eligible = 'AND EXISTS(SELECT 1 FROM guestbook_resource_configs WHERE resource_id=r.id AND revision=? AND digest=? AND source_revision=?)';
     eligibilityValues = [Number(clean.configurationRevision), String(clean.configurationDigest), proof.source];
   } else if (action === 'moderate') {
-    eligible = "AND EXISTS(SELECT 1 FROM guestbook_resource_items WHERE resource_id=r.id AND id=? AND revision=? AND status!='deleted')";
+    eligible = `AND EXISTS(SELECT 1 FROM guestbook_resource_items WHERE resource_id=r.id AND id=? AND revision=? AND status!='deleted'${clean.status === 'approved' ? ' AND ' + lineageEligibleSQL('guestbook_resource_items') : ''})`;
     eligibilityValues = [String(clean.item), Number(clean.itemRevision)];
   }
   const statements = [db.prepare(`INSERT OR IGNORE INTO guestbook_resource_operations(resource_id,id,action,fingerprint,status)
@@ -179,7 +181,7 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
   if (path.startsWith('/r/')) return resourcePublicRoute(req, env, base, path);
   if (!path.startsWith('/api/resources/')) return null;
   try {
-    const match = path.match(/^\/api\/resources\/([a-z0-9-]{6,64})(?:\/(export|media\/([a-z0-9-]{6,64})))?$/);
+    const match = path.match(/^\/api\/resources\/([a-z0-9-]{6,64})(?:\/(export|portable|restore|media\/([a-z0-9-]{6,64})))?$/);
     if (!match) throw new ResourceError('Choose a resource route.', 404);
     const id = match[1]!, proof = await identity(req, env, base, source);
     if (!['GET', 'POST'].includes(req.method)) throw new ResourceError('Use the supported resource request method.', 405);
@@ -189,10 +191,11 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
         return json({ contract: 1, recorded: false, current: null });
       }
       const resource = await ownedResource(env.DB, id, proof);
+      if (match[2] === 'portable') return json(await exportPortable(env, resource, proof));
       if (match[2]?.startsWith('media/')) {
         const item = await env.DB.prepare("SELECT id FROM guestbook_resource_items WHERE resource_id=? AND id=? AND status!='deleted'").bind(id, match[3]!).first();
         const media = item ? await env.MEDIA.get(resourceMediaKey(id, match[3]!)) : null;
-        return media ? new Response(media.body, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } }) : error('This media is unavailable.', 404);
+        return media && await lineageMediaAllowed(env, id, match[3]!) ? new Response(media.body, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } }) : error('This media is unavailable.', 404);
       }
       if (match[2] === 'export') {
         const items = await env.DB.prepare('SELECT id,caption,author,status,revision,synthetic,created_at FROM guestbook_resource_items WHERE resource_id=? ORDER BY id').bind(id).all();
@@ -209,6 +212,7 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
       const snapshot = await env.DB.prepare(snapshotSelect).bind(id).first<{ snapshot: string }>();
       return json(snapshot ? JSON.parse(snapshot.snapshot) as unknown : null);
     }
+    if (match[2] === 'restore') return await restorePortable(env, id, proof, await readJSON(req, 1200000));
     if (match[2]) throw new ResourceError('This resource route is read-only.', 405);
     const raw: unknown = await readJSON(req, 8192);
     if (!object(raw)) throw new ResourceError('Choose a resource command.');
@@ -217,6 +221,7 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
       const fingerprint = await digest(JSON.stringify({ ...proof, resource: id, action: 'create' }));
       return json(await createResource(env.DB, id, proof, raw.operationId, fingerprint));
     }
+    if (raw.action === 'moderate' && raw.status === 'approved' && identifier(raw.item) && !await lineageMediaAllowed(env, id, raw.item)) throw new ResourceError('The current source no longer permits approval of this restored contribution.', 409);
     const result = await mutateResource(env.DB, id, proof, raw);
     // Deleted items stay deleted even if object deletion is unavailable. No
     // controlled public or owner media request can expose their keys again.
@@ -225,7 +230,7 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
     }
     return json(result);
   } catch (failure) {
-    if (failure instanceof ResourceError) return error(failure.message, failure.status);
+    if (failure instanceof ResourceError || failure instanceof PortabilityError) return error(failure.message, failure.status);
     // Storage/transport errors can follow a committed mutation. Never label
     // them unchanged or automatically retry; callers reconcile operationId.
     return json({ contract: 1, outcome: 'unknown', error: 'The resource outcome could not be confirmed. Reconcile the operation before retrying.' }, 503);

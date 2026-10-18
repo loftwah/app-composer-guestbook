@@ -50,5 +50,15 @@
       ],
       "default": "closed"
     }
+  },
+  "portability": {
+    "version": 1,
+    "format": "guestbook.approved-portable/v1",
+    "export": "/api/resources/:resource/portable",
+    "restore": "/api/resources/:freshResource/restore",
+    "maximumItems": 8,
+    "scope": "current-authorized-workspace-account-environment-target",
+    "restoredVisibility": "private",
+    "requiresLiveSource": true
   }
 }

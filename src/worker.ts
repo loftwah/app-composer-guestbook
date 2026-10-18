@@ -65,6 +65,7 @@ const app = {
           contract: 1,
           dataVersion: 1,
           resourceContract: 1,
+          portabilityContract: 1,
           resourcesEnabled: resourceEnabled(env),
           resourceAccount: env.RESOURCE_ACCOUNT_ID ?? null,
           resourceEnvironment: env.RESOURCE_ENVIRONMENT ?? null,
