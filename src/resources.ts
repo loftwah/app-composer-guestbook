@@ -105,7 +105,8 @@ async function createResource(db: D1Database, id: string, proof: ResourceIdentit
   return operationResult(results[2]?.results?.[0] as OperationRow | undefined ?? null, fingerprint);
 }
 
-async function mutateResource(db: D1Database, id: string, proof: ResourceIdentity, command: Record<string, unknown>) {
+async function mutateResource(env: ResourceEnv, id: string, proof: ResourceIdentity, command: Record<string, unknown>) {
+  const db = env.DB;
   const action = command.action;
   if (!['stage', 'activate', 'control', 'moderate'].includes(String(action)) || !operationId(command.operationId) || !version(command.expectedVersion)) {
     throw new ResourceError('Choose a supported operation and the current resource version.');
@@ -138,6 +139,7 @@ async function mutateResource(db: D1Database, id: string, proof: ResourceIdentit
   const previous = await db.prepare('SELECT fingerprint,status,result_json FROM guestbook_resource_operations WHERE resource_id=? AND id=?')
     .bind(id, operation).first<OperationRow>();
   if (previous) return operationResult(previous, fingerprint);
+  if (action === 'moderate' && clean.status === 'approved' && !await lineageMediaAllowed(env, id, String(clean.item))) throw new ResourceError('The current source no longer permits approval of this restored contribution.', 409);
   if (row.version !== expected) throw new ResourceError('The resource changed. Reconcile its current version before retrying.', 409);
   let eligible = '', eligibilityValues: (string | number)[] = [];
   if (action === 'activate') {
@@ -223,8 +225,7 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
       const fingerprint = await digest(JSON.stringify({ ...proof, resource: id, action: 'create' }));
       return json(await createResource(env.DB, id, proof, raw.operationId, fingerprint));
     }
-    if (raw.action === 'moderate' && raw.status === 'approved' && identifier(raw.item) && !await lineageMediaAllowed(env, id, raw.item)) throw new ResourceError('The current source no longer permits approval of this restored contribution.', 409);
-    const result = await mutateResource(env.DB, id, proof, raw);
+    const result = await mutateResource(env, id, proof, raw);
     // Deleted items stay deleted even if object deletion is unavailable. No
     // controlled public or owner media request can expose their keys again.
     if (raw.action === 'moderate' && raw.status === 'deleted' && identifier(raw.item)) {

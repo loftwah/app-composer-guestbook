@@ -868,3 +868,70 @@ test("configuration-only restore retains source privacy and cannot launder its p
     f.close();
   }
 });
+
+test("historical approval receipt still reconciles after its source is revoked without granting a new publication", async () => {
+  const f = fixture();
+  try {
+    const { manifest, item } = await approved(f);
+    const copied = await (await restore(f, manifest)).json(),
+      copy = copied.items[0].id;
+    assert.equal(
+      (
+        await f.command(resourceB, "activate", {
+          expectedVersion: 1,
+          configurationRevision: 1,
+          configurationDigest: copied.configuration.digest,
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await f.command(resourceB, "control", {
+          expectedVersion: 2,
+          visible: true,
+          paused: true,
+        })
+      ).status,
+      200,
+    );
+    const command = {
+      action: "moderate",
+      operationId: "fictional-historical-approval",
+      expectedVersion: 3,
+      item: copy,
+      itemRevision: 1,
+      status: "approved",
+    };
+    const initial = await f.request(`/api/resources/${resourceB}`, command),
+      receipt = await initial.json();
+    assert.equal(initial.status, 200);
+    assert.equal(
+      (
+        await f.command(resourceA, "moderate", {
+          expectedVersion: 3,
+          item,
+          itemRevision: 2,
+          status: "hidden",
+        })
+      ).status,
+      200,
+    );
+    const repeated = await f.request(`/api/resources/${resourceB}`, command);
+    assert.equal(repeated.status, 200);
+    assert.deepEqual(await repeated.json(), receipt);
+    assert.equal(
+      (await f.request(`/r/${resourceB}/media/${copy}`, null, { owner: false }))
+        .status,
+      404,
+    );
+    assert.equal(
+      f.sqlite
+        .prepare("SELECT version FROM guestbook_resources WHERE id=?")
+        .get(resourceB).version,
+      4,
+    );
+  } finally {
+    f.close();
+  }
+});
