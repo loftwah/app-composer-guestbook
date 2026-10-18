@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS guestbook_enquiries (
  configuration_revision INTEGER NOT NULL CHECK(configuration_revision>0),
  provenance_json TEXT NOT NULL CHECK(json_valid(provenance_json)),
  model_version INTEGER NOT NULL CHECK(model_version=1),
+ producer_source TEXT NOT NULL,
  values_json TEXT CHECK(values_json IS NULL OR json_valid(values_json)),
  consent_version INTEGER NOT NULL CHECK(consent_version=1),
  consent_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -38,7 +39,8 @@ CREATE TABLE IF NOT EXISTS guestbook_enquiry_operations (
  id TEXT NOT NULL,
  fingerprint TEXT NOT NULL,
  action TEXT NOT NULL CHECK(action IN ('configure','review','reject','delete')),
- result_json TEXT NOT NULL CHECK(json_valid(result_json)),
+ status TEXT NOT NULL CHECK(status IN ('pending','completed')),
+ result_json TEXT CHECK(result_json IS NULL OR json_valid(result_json)),
  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
  PRIMARY KEY(resource_id,id)
 );
