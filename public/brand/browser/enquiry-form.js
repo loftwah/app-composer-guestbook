@@ -17,6 +17,7 @@ import { enquiryValues } from "../enquiry-model.js";
     const storageKey = "guestbook.enquiry/1:" + location.origin + location.pathname;
     const intentPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
     let generation = 0, acknowledged = 0, pending = false, uncertain = null;
+    let submitted = null;
     function say(message) {
         status.textContent = message;
     }
@@ -175,6 +176,7 @@ import { enquiryValues } from "../enquiry-model.js";
         // Store the intent before dispatch: a timeout, malformed response or unknown
         // status can follow a committed write. None of those permits another send.
         uncertain = intent;
+        submitted = { intent, generation: submittedGeneration };
         remember();
         pending = true;
         paint();
@@ -227,7 +229,16 @@ import { enquiryValues } from "../enquiry-model.js";
             }
             uncertain = null;
             remember();
-            // Never clear text after a receipt wait: it may contain a newer draft.
+            if (submitted?.intent === intent && submitted.generation === generation) {
+                form.reset();
+                deliverables.replaceChildren();
+                generation++;
+                acknowledged = generation;
+                submitted = null;
+                say("That delivery was received privately. The original submitted form is now clear. No notification or reply was sent.");
+                return;
+            }
+            // Never clear a newer draft or a draft whose original generation is unknown.
             say("That delivery was received privately. The text still in this form has been retained; check it before choosing to send a new brief.");
         }
         catch (error) {

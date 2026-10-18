@@ -28,6 +28,7 @@ import { enquiryValues } from "../enquiry-model.ts";
     acknowledged = 0,
     pending = false,
     uncertain: string | null = null;
+  let submitted: { intent: string; generation: number } | null = null;
   function say(message: string) {
     status.textContent = message;
   }
@@ -189,6 +190,7 @@ import { enquiryValues } from "../enquiry-model.ts";
     // Store the intent before dispatch: a timeout, malformed response or unknown
     // status can follow a committed write. None of those permits another send.
     uncertain = intent;
+    submitted = { intent, generation: submittedGeneration };
     remember();
     pending = true;
     paint();
@@ -245,7 +247,18 @@ import { enquiryValues } from "../enquiry-model.ts";
       }
       uncertain = null;
       remember();
-      // Never clear text after a receipt wait: it may contain a newer draft.
+      if (submitted?.intent === intent && submitted.generation === generation) {
+        form.reset();
+        deliverables.replaceChildren();
+        generation++;
+        acknowledged = generation;
+        submitted = null;
+        say(
+          "That delivery was received privately. The original submitted form is now clear. No notification or reply was sent.",
+        );
+        return;
+      }
+      // Never clear a newer draft or a draft whose original generation is unknown.
       say(
         "That delivery was received privately. The text still in this form has been retained; check it before choosing to send a new brief.",
       );

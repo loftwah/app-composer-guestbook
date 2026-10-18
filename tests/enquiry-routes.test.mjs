@@ -505,3 +505,35 @@ test("write-time closure after the scope read denies delivery and logical expiry
     f.close();
   }
 });
+test("the actual scheduled handler clears logically expired bodies and preview schedules remain empty", async () => {
+  const f = fixture();
+  try {
+    const active = await f.start(),
+      configuration = active.configuration.revision,
+      path = `/r/${resource}/c/${configuration}/enquiry`;
+    await f.configure({ kind: "standalone", configuration });
+    await f.request(path + "/submit", brief(), { public: true });
+    f.sqlite.exec(
+      "UPDATE guestbook_enquiries SET expires_at=datetime('now','-1 day')",
+    );
+    const tasks = [];
+    await worker.scheduled({}, f.env, {
+      waitUntil(task) {
+        tasks.push(task);
+      },
+    });
+    await Promise.all(tasks);
+    assert.equal(
+      f.sqlite.prepare("SELECT values_json FROM guestbook_enquiries").get()
+        .values_json,
+      null,
+    );
+    const config = JSON.parse(
+      readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"),
+    );
+    assert.deepEqual(config.triggers.crons, ["17 3 * * *"]);
+    assert.deepEqual(config.env.preview.triggers.crons, []);
+  } finally {
+    f.close();
+  }
+});

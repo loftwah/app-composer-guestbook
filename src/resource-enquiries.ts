@@ -98,6 +98,25 @@ async function cleanup(env: ResourceEnv) {
     /* Reads filter expiry even when physical cleanup is unavailable. */
   }
 }
+async function coherent(env: ResourceEnv, context: EnquiryOwnerContext) {
+  const row = await env.DB.prepare(
+    "SELECT id FROM guestbook_resources WHERE id=? AND version=? AND workspace_id=? AND account_id=? AND environment=? AND target=?",
+  )
+    .bind(
+      context.resource.id,
+      context.resource.version,
+      context.proof.workspace,
+      context.proof.account,
+      context.proof.environment,
+      context.proof.target,
+    )
+    .first();
+  if (!row)
+    throw new EnquiryError(
+      "The private inbox changed while loading. Refresh it before another change.",
+      409,
+    );
+}
 async function receipt(env: ResourceEnv, scope: ScopeRow, intent: unknown) {
   if (!enquiryIntent(intent))
     throw new EnquiryError("Keep this form’s exact delivery intent.");
@@ -265,6 +284,7 @@ export async function ownedEnquiryRoutes(
         )
           .bind(id)
           .all<Record<string, unknown>>();
+        await coherent(env, context);
         return json({
           contract: 1,
           format: "guestbook.private-enquiries/v1",
@@ -314,6 +334,7 @@ export async function ownedEnquiryRoutes(
           enabled: number;
           revision: number;
         }>();
+      await coherent(env, context);
       return json({
         contract: 1,
         format: "guestbook.enquiry-inbox/v1",
