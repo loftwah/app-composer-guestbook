@@ -52,7 +52,8 @@ html.launcher-open { overflow: hidden; scroll-behavior: auto; }
   padding: max(20px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
   font: 500 16px/1.4 Space, system-ui, sans-serif;
 }
-:root[data-theme="light"] #app-navigation {
+:root[data-theme="light"] #app-navigation,
+:root[data-mode="light"] #app-navigation[data-native-launcher] {
   --menu-paper: #f4f0e7;
   --menu-ink: #25272d;
   --menu-secondary: #5b5e64;
