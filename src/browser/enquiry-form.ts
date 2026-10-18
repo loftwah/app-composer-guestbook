@@ -110,17 +110,28 @@ import { enquiryValues } from "../enquiry-model.ts";
     };
   }
   async function request(url: string, payload: unknown): Promise<unknown> {
-    const response = await fetch(url, {
-      method: "POST",
-      credentials: "omit",
-      redirect: "error",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Guestbook-Enquiry-Source": form.dataset.source!,
-        "X-Guestbook-Enquiry-Target": form.dataset.target!,
-      },
-      body: JSON.stringify(payload),
-    });
+    const controller = new AbortController(),
+      timeout = setTimeout(() => controller.abort(), 15000);
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        method: "POST",
+        credentials: "omit",
+        redirect: "error",
+        headers: {
+          "Content-Type": "application/json",
+          ...(form.dataset.publication
+            ? { "X-Composer-Enquiry-Key": form.dataset.publication }
+            : {}),
+          "X-Guestbook-Enquiry-Source": form.dataset.source!,
+          "X-Guestbook-Enquiry-Target": form.dataset.target!,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     const raw: unknown = await response.json();
     if (!response.ok) {
       const message =

@@ -28,12 +28,16 @@ const enabled = (env: ResourceEnv) =>
     env.RESOURCE_ACCOUNT_ID &&
     /^[a-z0-9-]{1,40}$/.test(env.RESOURCE_ENVIRONMENT ?? ""),
   );
-function metadata(scope: ScopeRow | null, source: string) {
+function metadata(
+  scope: ScopeRow | null,
+  source: string,
+  open = Boolean(scope?.enabled),
+) {
   return {
     contract: 1,
     format: "guestbook.enquiry-form/v1",
     source,
-    open: Boolean(scope?.enabled),
+    open,
     scope: scope
       ? {
           key: scope.scope_key,
@@ -425,7 +429,14 @@ export async function ownedEnquiryRoutes(
         context.proof.environment,
         context.proof.target,
       );
-      if (command.action === "form") return json(metadata(scope, source));
+      if (command.action === "form") {
+        const stored = await env.DB.prepare(
+          "SELECT * FROM guestbook_enquiry_scopes WHERE resource_id=? AND scope_key=?",
+        )
+          .bind(id, key)
+          .first<ScopeRow>();
+        return json(metadata(stored, source, Boolean(scope)));
+      }
       if (!scope || !scopeKey(key))
         throw new EnquiryError(
           "This exact private enquiry form is closed.",

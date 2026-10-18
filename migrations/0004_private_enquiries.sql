@@ -47,3 +47,6 @@ CREATE TABLE IF NOT EXISTS guestbook_enquiry_operations (
 CREATE INDEX IF NOT EXISTS guestbook_enquiries_inbox ON guestbook_enquiries(resource_id,status,created_at,id);
 CREATE INDEX IF NOT EXISTS guestbook_enquiries_expiry ON guestbook_enquiries(expires_at);
 CREATE INDEX IF NOT EXISTS guestbook_enquiry_operations_expiry ON guestbook_enquiry_operations(created_at);
+CREATE INDEX IF NOT EXISTS guestbook_enquiries_created ON guestbook_enquiries(created_at);
+CREATE INDEX IF NOT EXISTS guestbook_enquiries_scope ON guestbook_enquiries(resource_id,scope_key);
+CREATE INDEX IF NOT EXISTS guestbook_enquiry_scopes_expiry ON guestbook_enquiry_scopes(enabled,updated_at);
