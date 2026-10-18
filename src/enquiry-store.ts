@@ -57,6 +57,9 @@ export async function purgeEnquiries(db: D1Database) {
     db.prepare(
       "DELETE FROM guestbook_enquiry_operations WHERE created_at<datetime('now','-35 days')",
     ),
+    db.prepare(
+      "DELETE FROM guestbook_enquiry_scopes WHERE enabled=0 AND updated_at<datetime('now','-35 days') AND NOT EXISTS(SELECT 1 FROM guestbook_enquiries e WHERE e.resource_id=guestbook_enquiry_scopes.resource_id AND e.scope_key=guestbook_enquiry_scopes.scope_key)",
+    ),
   ]);
 }
 function operationResult(
@@ -149,14 +152,22 @@ export async function configureEnquiryScope(
     .first<OperationRow>();
   if (old) return operationResult(old, fingerprint);
   const pendingValues = [id, operation, fingerprint];
+  const retires = enabled && scope.kind === "composer.publication";
+  const retirementSQL =
+    "s.kind='composer.publication' AND json_extract(s.provenance_json,'$.stack')=? AND json_extract(s.provenance_json,'$.instance')=?";
+  const retirementValues =
+    scope.kind === "composer.publication"
+      ? [scope.stack, scope.instance]
+      : ["", ""];
   const results = await db.batch([
     db
       .prepare(
         `INSERT OR IGNORE INTO guestbook_enquiry_operations(resource_id,id,fingerprint,action,status)
       SELECT r.id,?,?,'configure','pending' FROM guestbook_resources r WHERE r.id=? AND r.version=? AND ${identitySQL}
       AND EXISTS(SELECT 1 FROM guestbook_resource_configs c WHERE c.resource_id=r.id AND c.revision=? AND c.activated_at IS NOT NULL)
-      AND ((?=0 AND NOT EXISTS(SELECT 1 FROM guestbook_enquiry_scopes s WHERE s.resource_id=r.id AND s.scope_key=?) AND (SELECT COUNT(*) FROM guestbook_enquiry_scopes s WHERE s.resource_id=r.id)<?)
+      AND ((?=0 AND NOT EXISTS(SELECT 1 FROM guestbook_enquiry_scopes s WHERE s.resource_id=r.id AND s.scope_key=?))
         OR EXISTS(SELECT 1 FROM guestbook_enquiry_scopes s WHERE s.resource_id=r.id AND s.scope_key=? AND s.revision=?))
+      AND (?=0 OR (SELECT COUNT(*) FROM guestbook_enquiry_scopes s WHERE s.resource_id=r.id AND s.enabled=1 AND s.scope_key!=? AND NOT (?=1 AND ${retirementSQL}))<?)
       AND (?=0 OR (r.visible=1 AND r.paused=0 AND ${resourceRestoreEligibleSQL("r")}))
       AND ${operationDayLimitSQL}`,
       )
@@ -169,12 +180,22 @@ export async function configureEnquiryScope(
         scope.configuration,
         expectedScopeRevision,
         key,
-        enquiryScopeLimit,
         key,
         expectedScopeRevision,
         enabled ? 1 : 0,
+        key,
+        retires ? 1 : 0,
+        ...retirementValues,
+        enquiryScopeLimit,
+        enabled ? 1 : 0,
         enquiryOwnerDailyLimit,
       ),
+    db
+      .prepare(
+        `UPDATE guestbook_enquiry_scopes AS s SET enabled=0,revision=revision+1,updated_at=CURRENT_TIMESTAMP
+      WHERE s.resource_id=? AND s.scope_key!=? AND s.enabled=1 AND ?=1 AND ${retirementSQL} AND ${pendingSQL}`,
+      )
+      .bind(id, key, retires ? 1 : 0, ...retirementValues, ...pendingValues),
     db
       .prepare(
         `INSERT INTO guestbook_enquiry_scopes(resource_id,scope_key,kind,configuration_revision,provenance_json,enabled)

@@ -3,5 +3,9 @@
   "publisher.d.mts": "src/publisher.d.mts",
   "guest-postcard.js": "public/brand/guest-postcard.js",
   "navigation.js": "public/brand/navigation.js",
-  "owner.js": "public/brand/owner.js"
+  "owner.js": "public/brand/owner.js",
+  "enquiry-form.js": "public/brand/browser/enquiry-form.js",
+  "enquiry-model.js": "public/brand/enquiry-model.js",
+  "enquiry-model-validator.js": "public/brand/enquiry-model-validator.js",
+  "enquiry-calendar.js": "public/brand/enquiry-calendar.js"
 }

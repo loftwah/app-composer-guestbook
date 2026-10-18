@@ -19,6 +19,7 @@ import {
 import { sanitisePNG } from "./png.ts";
 import {guestDefaults, submitPostcard} from "./guest.ts";
 import { resourceEnabled, resourceRoutes, type ResourceEnv } from './resources.ts';
+import { purgeEnquiries } from './enquiry-store.ts';
 interface Env extends BaseEnv, PublisherEnv, ResourceEnv {
   MEDIA: R2Bucket;
   ASSETS?: Fetcher;
@@ -66,6 +67,7 @@ const app = {
           dataVersion: 1,
           resourceContract: 1,
           portabilityContract: 1,
+          enquiryContract: 1,
           resourcesEnabled: resourceEnabled(env),
           resourceAccount: env.RESOURCE_ACCOUNT_ID ?? null,
           resourceEnvironment: env.RESOURCE_ENVIRONMENT ?? null,
@@ -332,4 +334,6 @@ export default {async fetch(req:Request,env:Env,context:ExecutionContext){
  const probe=health(req,base+'/healthz',"guestbook",BUILD_SHA);if(probe)return probe;
  const response=await app.fetch(req,env);const event=postcardReceiptEvent(req,response,base)??pageEvent(req,response,base);
  if(event)publish(env,context,req,event);return response;
+},async scheduled(_event:ScheduledController,env:Env,context:ExecutionContext){
+ if(resourceEnabled(env))context.waitUntil(purgeEnquiries(env.DB));
 }} satisfies ExportedHandler<Env>;

@@ -60,5 +60,15 @@
     "scope": "current-authorized-workspace-account-environment-target",
     "restoredVisibility": "private",
     "requiresLiveSource": true
+  },
+  "privateEnquiries": {
+    "version": 1,
+    "model": "briefs/v1",
+    "owner": "/api/resources/:resource/enquiries",
+    "public": "/r/:resource/c/:configuration/enquiry",
+    "default": "closed",
+    "retentionDays": 30,
+    "receiptDays": 35,
+    "notifications": false
   }
 }

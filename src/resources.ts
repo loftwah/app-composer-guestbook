@@ -1,6 +1,7 @@
 import { authorised, error, json, readJSON, type BaseEnv } from './common.ts';
 import { object, resourceConfiguration } from './resource-config.ts';
 import { resourcePublicRoute } from './resource-public.ts';
+import { publicEnquiryRoutes, ownedEnquiryRoutes } from './resource-enquiries.ts';
 import { lineageEligibleSQL, lineageMediaAllowed, resourceRestoreEligibleSQL } from './resource-lineage.ts';
 import { exportPortable, restorePortable, PortabilityError } from './resource-portability.ts';
 
@@ -182,13 +183,16 @@ async function mutateResource(env: ResourceEnv, id: string, proof: ResourceIdent
 }
 
 export async function resourceRoutes(req: Request, env: ResourceEnv, base: string, path: string, source: string): Promise<Response | null> {
+  const enquiry = await publicEnquiryRoutes(req, env, base, path, source);
+  if (enquiry) return enquiry;
   if (path.startsWith('/r/')) return resourcePublicRoute(req, env, base, path);
   if (!path.startsWith('/api/resources/')) return null;
   try {
-    const match = path.match(/^\/api\/resources\/([a-z0-9-]{6,64})(?:\/(export|portable|restore|media\/([a-z0-9-]{6,64})))?$/);
+    const match = path.match(/^\/api\/resources\/([a-z0-9-]{6,64})(?:\/(export|portable|restore|media\/([a-z0-9-]{6,64})|enquiries(?:\/(export|receipt))?))?$/);
     if (!match) throw new ResourceError('Choose a resource route.', 404);
     const id = match[1]!, proof = await identity(req, env, base, source);
     if (!['GET', 'POST'].includes(req.method)) throw new ResourceError('Use the supported resource request method.', 405);
+    if (match[2]?.startsWith('enquiries')) return ownedEnquiryRoutes(req, env, base, match[4] ?? '', source, { resource: await ownedResource(env.DB, id, proof), proof });
     if (req.method === 'GET') {
       const requestedOperation = new URL(req.url).searchParams.get('operation');
       if (requestedOperation && operationId(requestedOperation) && !await env.DB.prepare('SELECT id FROM guestbook_resources WHERE id=?').bind(id).first()) {
