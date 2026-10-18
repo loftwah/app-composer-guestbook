@@ -14,6 +14,8 @@ import { enquiryValues } from "../enquiry-model.ts";
   const status = required<HTMLElement>("[data-status]"),
     send = required<HTMLButtonElement>("[data-send]"),
     check = required<HTMLButtonElement>("[data-check]"),
+    retry = required<HTMLButtonElement>("[data-retry]"),
+    original = required<HTMLElement>("[data-original-values]"),
     receiptPanel = required<HTMLElement>("[data-receipt-panel]"),
     intentLabel = required<HTMLElement>("[data-intent]"),
     deliverables = required<HTMLElement>("[data-deliverables]"),
@@ -28,7 +30,18 @@ import { enquiryValues } from "../enquiry-model.ts";
     acknowledged = 0,
     pending = false,
     uncertain: string | null = null;
-  let submitted: { intent: string; generation: number } | null = null;
+  type Payload = {
+    contract: number;
+    intent: string;
+    values: Record<string, unknown>;
+    consent: boolean;
+  };
+  let submitted: {
+    intent: string;
+    generation: number;
+    payload: Payload;
+  } | null = null;
+  let checkedAbsent = false;
   function say(message: string) {
     status.textContent = message;
   }
@@ -49,6 +62,10 @@ import { enquiryValues } from "../enquiry-model.ts";
   function paint() {
     send.disabled = pending || uncertain !== null;
     check.disabled = pending;
+    retry.disabled = pending || !checkedAbsent || !submitted;
+    original.textContent = submitted
+      ? JSON.stringify(submitted.payload.values, null, 2)
+      : "The original submitted text is no longer in this page. Only its opaque receipt intent was retained in this tab.";
     add.disabled = deliverables.children.length >= 8;
     receiptPanel.hidden = uncertain === null;
     intentLabel.textContent = uncertain ? "Delivery intent: " + uncertain : "";
@@ -169,7 +186,7 @@ import { enquiryValues } from "../enquiry-model.ts";
     try {
       clean = enquiryValues(values());
       if (new TextEncoder().encode(JSON.stringify(clean)).byteLength > 10240)
-        throw Error("Keep the private brief within10 KB of text.");
+        throw Error("Keep the private brief within 10 KB of text.");
     } catch (error) {
       say(
         error instanceof Error
@@ -190,7 +207,8 @@ import { enquiryValues } from "../enquiry-model.ts";
     // Store the intent before dispatch: a timeout, malformed response or unknown
     // status can follow a committed write. None of those permits another send.
     uncertain = intent;
-    submitted = { intent, generation: submittedGeneration };
+    submitted = { intent, generation: submittedGeneration, payload };
+    checkedAbsent = false;
     remember();
     pending = true;
     paint();
@@ -200,6 +218,7 @@ import { enquiryValues } from "../enquiry-model.ts";
       if (!receipt(result, intent) || !result.received)
         throw Error("The app returned an incomplete delivery receipt.");
       uncertain = null;
+      submitted = null;
       remember();
       if (generation === submittedGeneration) {
         form.reset();
@@ -207,7 +226,7 @@ import { enquiryValues } from "../enquiry-model.ts";
         generation++;
         acknowledged = generation;
         say(
-          "Received privately. No notification or reply was sent. The owner can review this brief for up to30 days.",
+          "Received privately. No notification or reply was sent. The owner can review this brief for up to 30 days.",
         );
       } else {
         say(
@@ -240,8 +259,9 @@ import { enquiryValues } from "../enquiry-model.ts";
       if (!receipt(result, intent))
         throw Error("The receipt response could not be validated.");
       if (!result.received) {
+        checkedAbsent = true;
         say(
-          "No receipt is currently available. That does not prove delivery failed. Keep your brief and intent; this form will not resend it.",
+          "No receipt is currently available. That does not prove delivery failed. Keep your brief and intent; nothing is resent automatically. You may explicitly retry the original snapshot with the same intent while it remains in this page.",
         );
         return;
       }
@@ -258,6 +278,7 @@ import { enquiryValues } from "../enquiry-model.ts";
         );
         return;
       }
+      submitted = null;
       // Never clear a newer draft or a draft whose original generation is unknown.
       say(
         "That delivery was received privately. The text still in this form has been retained; check it before choosing to send a new brief.",
@@ -268,6 +289,47 @@ import { enquiryValues } from "../enquiry-model.ts";
           ? error.message
           : "The receipt is unavailable.") +
           " Your text and delivery intent are retained.",
+      );
+    } finally {
+      pending = false;
+      paint();
+    }
+  });
+  retry.addEventListener("click", async () => {
+    const snapshot = submitted;
+    if (pending || !checkedAbsent || !snapshot || snapshot.intent !== uncertain)
+      return;
+    pending = true;
+    checkedAbsent = false;
+    paint();
+    say(
+      "Retrying only the exact original brief and delivery intent… Newer text stays here.",
+    );
+    try {
+      const result = await request(form.action, snapshot.payload);
+      if (!receipt(result, snapshot.intent) || !result.received)
+        throw Error("The app did not confirm the exact retry.");
+      uncertain = null;
+      submitted = null;
+      remember();
+      if (generation === snapshot.generation) {
+        form.reset();
+        deliverables.replaceChildren();
+        generation++;
+        acknowledged = generation;
+        say(
+          "The original brief was received privately. No new delivery intent was allocated.",
+        );
+      } else
+        say(
+          "The original brief was received privately using the same intent. Your newer text remains here and has not been sent.",
+        );
+    } catch (error) {
+      say(
+        (error instanceof Error
+          ? error.message
+          : "The exact retry is still uncertain.") +
+          " Keep its intent and check the receipt before another attempt.",
       );
     } finally {
       pending = false;
