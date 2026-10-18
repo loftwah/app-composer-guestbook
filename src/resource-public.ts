@@ -1,6 +1,7 @@
 import { error, escape, html, json, limited, readJSON, text } from './common.ts';
 import { resourceConfiguration, object, type ResourceConfiguration } from './resource-config.ts';
 import { sanitisePNG } from './png.ts';
+import { lineageEligibleSQL, lineageMediaAllowed, resourceRestoreEligibleSQL } from './resource-lineage.ts';
 import { resourceEnabled, resourceMediaKey, type ResourceEnv, type ResourceRow } from './resources.ts';
 
 interface PublicResource extends ResourceRow {
@@ -105,7 +106,8 @@ export async function resourcePublicRoute(req: Request, env: ResourceEnv, base: 
     const row = await env.DB.prepare(`SELECT r.*,c.config_json,c.revision AS config_revision,a.config_json AS current_config
       FROM guestbook_resources r JOIN guestbook_resource_configs a ON a.resource_id=r.id AND a.revision=r.active_revision
       JOIN guestbook_resource_configs c ON c.resource_id=r.id AND c.revision=COALESCE(?,r.active_revision)
-      WHERE r.id=? AND r.account_id=? AND r.environment=? AND r.visible=1 AND c.activated_at IS NOT NULL`)
+      WHERE r.id=? AND r.account_id=? AND r.environment=? AND r.visible=1 AND c.activated_at IS NOT NULL AND ${resourceRestoreEligibleSQL('r')}
+        AND NOT EXISTS(SELECT 1 FROM guestbook_resource_items restored WHERE restored.resource_id=r.id AND restored.status!='deleted' AND NOT (${lineageEligibleSQL('restored')}))`)
       .bind(revision, id, env.RESOURCE_ACCOUNT_ID!, env.RESOURCE_ENVIRONMENT!).first<PublicResource>();
     if (!row) return error('This guestbook is unavailable.', 404);
     const config = resourceConfiguration(JSON.parse(row.config_json) as unknown);
@@ -116,13 +118,13 @@ export async function resourcePublicRoute(req: Request, env: ResourceEnv, base: 
     if (tail === '/' && revision === null) return new Response(null, { status: 302, headers: { Location: publicBase + '/', 'Cache-Control': 'no-store' } });
     const media = tail.match(/^\/media\/([a-z0-9-]{6,64})$/);
     if (media) {
-      const item = await env.DB.prepare("SELECT id FROM guestbook_resource_items WHERE resource_id=? AND id=? AND status='approved'").bind(id, media[1]!).first();
+      const item = await env.DB.prepare(`SELECT id FROM guestbook_resource_items i WHERE resource_id=? AND id=? AND status='approved' AND ${lineageEligibleSQL('i')}`).bind(id, media[1]!).first();
       const object = item ? await env.MEDIA.get(resourceMediaKey(id, media[1]!)) : null;
-      return object ? new Response(object.body, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } }) : error('This image is unavailable.', 404);
+      return object && await lineageMediaAllowed(env, id, media[1]!, true) ? new Response(object.body, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' } }) : error('This image is unavailable.', 404);
     }
     const detail = tail.match(/^\/(api\/items|item)\/([a-z0-9-]{6,64})$/);
     if (detail) {
-      const item = await env.DB.prepare("SELECT id,caption,author,revision,synthetic FROM guestbook_resource_items WHERE resource_id=? AND id=? AND status='approved'").bind(id, detail[2]!).first<ResourceItem>();
+      const item = await env.DB.prepare(`SELECT id,caption,author,revision,synthetic FROM guestbook_resource_items i WHERE resource_id=? AND id=? AND status='approved' AND ${lineageEligibleSQL('i')}`).bind(id, detail[2]!).first<ResourceItem>();
       if (!item) return error('This contribution is not public.', 404);
       if (detail[1] === 'api/items') return json(itemView(item, url, base, row));
       return html(item.caption, `<a href="${publicBase}/">Back to ${escape(config.title)}</a><h1>${escape(item.caption)}</h1><img class="detail-media" src="${resourceBase}/media/${item.id}" alt="${escape(item.caption)}" width="1200" height="900"><p>${escape(item.author)}</p>`, base, 'guestbook', config.theme, item.caption, url.origin, path, url.origin, config.title);
@@ -131,7 +133,7 @@ export async function resourcePublicRoute(req: Request, env: ResourceEnv, base: 
       const open = current.guestAccess === 'postcards' && !row.paused;
       return html(config.title, `<a href="${publicBase}/">Back to ${escape(config.title)}</a>${open ? contributionForm(resourceBase, base) : '<h1>Postcards are closed</h1><p>You can still browse the approved collection.</p>'}`, base, 'guestbook', config.theme, 'Send a postcard for owner approval.', url.origin, path, url.origin, config.title);
     }
-    const items = await env.DB.prepare("SELECT id,caption,author,revision,synthetic FROM guestbook_resource_items WHERE resource_id=? AND status='approved' ORDER BY created_at DESC,id LIMIT 100").bind(id).all<ResourceItem>();
+    const items = await env.DB.prepare(`SELECT id,caption,author,revision,synthetic FROM guestbook_resource_items i WHERE resource_id=? AND status='approved' AND ${lineageEligibleSQL('i')} ORDER BY created_at DESC,id LIMIT 100`).bind(id).all<ResourceItem>();
     if (tail === '/api/items') return json({ contract: 1, provider: 'guestbook', resource: id, items: items.results.map(item => itemView(item, url, base, row)) });
     if (tail !== '/') return error('Page not found.', 404);
     const open = current.guestAccess === 'postcards' && !row.paused;

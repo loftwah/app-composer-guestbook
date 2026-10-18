@@ -22,7 +22,7 @@ const postcard = caption => ({ code: 'hunter2', caption, author: 'Fictional visi
 function fixture(base = '') {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec('PRAGMA foreign_keys=ON');
-  for (const name of ['0001.sql', '0002_owned_resources.sql']) sqlite.exec(readFileSync(new URL('../migrations/' + name, import.meta.url), 'utf8'));
+  for (const name of ['0001.sql', '0002_owned_resources.sql', '0003_portability_lineage.sql']) sqlite.exec(readFileSync(new URL('../migrations/' + name, import.meta.url), 'utf8'));
   const objects = new Map(), origin = 'https://guestbook.example.test';
   let beforeBatch, afterBatch;
   const statement = (sql, params = []) => ({ sql, params,

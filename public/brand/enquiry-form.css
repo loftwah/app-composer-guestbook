@@ -1,0 +1,69 @@
+.enquiry-intro {
+  max-width: 68ch;
+  margin-bottom: 32px;
+}
+.enquiry-intro h1 {
+  max-width: 18ch;
+}
+.enquiry-intro p {
+  line-height: 1.6;
+}
+#private-enquiry {
+  max-width: 760px;
+}
+#private-enquiry fieldset {
+  min-width: 0;
+  margin: 0 0 28px;
+}
+#private-enquiry input,
+#private-enquiry textarea,
+#private-enquiry select {
+  max-width: none;
+  font-size: 16px;
+}
+#private-enquiry .postcard-consent input {
+  width: 20px;
+}
+#private-enquiry button {
+  min-height: 48px;
+}
+#private-enquiry button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.enquiry-deliverable {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  margin-bottom: 16px;
+}
+.enquiry-deliverable:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+#private-enquiry [data-receipt-panel] {
+  border: 1px solid var(--border);
+  padding: 20px;
+  margin: 24px 0;
+  background: var(--surface);
+  overflow-wrap: anywhere;
+}
+#private-enquiry [data-status] {
+  min-height: 64px;
+  margin: 24px 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+#private-enquiry [hidden] {
+  display: none;
+}
+@media (max-width: 600px) {
+  #private-enquiry fieldset {
+    padding: 16px;
+  }
+  #private-enquiry button {
+    width: 100%;
+  }
+  .enquiry-intro {
+    margin-bottom: 24px;
+  }
+}

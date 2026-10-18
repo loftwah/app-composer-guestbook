@@ -6,6 +6,14 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const files = [
   "src/publisher.mts",
+  "src/resource-enquiries.ts",
+  "public/brand/enquiry-form.css",
+  ...readdirSync(resolve(root, "src"))
+    .filter((file) => /^enquiry-.*\.ts$/.test(file))
+    .map((file) => "src/" + file),
+  ...readdirSync(resolve(root, "tests"))
+    .filter((file) => /^enquiry-.*\.test\.mjs$/.test(file))
+    .map((file) => "tests/" + file),
   ...readdirSync(resolve(root, "src/browser"), { recursive: true })
     .filter((file) => /\.(ts|mts)$/.test(file))
     .map((file) => "src/browser/" + file),

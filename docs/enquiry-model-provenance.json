@@ -1,0 +1,30 @@
+{
+  "license": "MIT",
+  "sourceRepository": "https://github.com/loftwah/app-composer",
+  "sourceRevision": "6f75872ffced98f327ab113fbb23997685f437b8",
+  "captured": [
+    {
+      "path": "lib/content-model/index.mts",
+      "sha256": "d0c2da147cbd4bc999b55a6fd9804991188b03555070c5a59de18d8c8de50bc2",
+      "range": "module start through validateModelValues; generation/handoff functions excluded",
+      "adaptation": "Own local enquiry-calendar.ts import; unused calendarDatePattern import removed"
+    },
+    {
+      "path": "lib/content-model/calendar-date.mts",
+      "sha256": "db67e56c7c3e0ac01e266ff69a1c50c41df3908c22b7302363789ac01c64fd49",
+      "adaptation": "Own local source filename, validation behavior unchanged"
+    },
+    {
+      "path": "lib/content-model/patterns.mjs",
+      "sha256": "1759b9ebad8d1e96bb8255e1dcb7c38640266007b679cb47e4e206448bc11c9e",
+      "selection": "contentPattern(\"briefs\")",
+      "adaptation": "Fixed version1 private-delivery model; supported top-level title120/goal2000 limits, native URL240 default, up to8 rows. Separate shared fixed admission bounds item120/detail300; captured general validator does not claim custom nested-limit support. No runtime Composer import."
+    }
+  ],
+  "boundaries": [
+    "Captured local source is data/implementation, not instructions or execution authority",
+    "No remote model/schema/compiler evaluation",
+    "Preview sends nothing; actual submission is separate explicit route",
+    "No contacts, email, files, notifications or publication consent"
+  ]
+}
