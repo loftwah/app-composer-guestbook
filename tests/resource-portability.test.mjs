@@ -323,13 +323,10 @@ for (const base of ["", "/guestbook"])
           ).status,
           200,
         );
-        const exportedCopy = await (
-          await f.request(`/api/resources/${resourceB}/portable`)
-        ).json();
         assert.equal(
-          exportedCopy.items.length,
-          0,
-          "copies cannot launder lineage into standalone originals",
+          (await f.request(`/api/resources/${resourceB}/portable`)).status,
+          409,
+          "copies cannot launder configuration lineage into standalone originals",
         );
         const hidden = await f.command(resourceA, "moderate", {
           expectedVersion: resource.resource.version,
@@ -355,13 +352,11 @@ for (const base of ["", "/guestbook"])
         }
         assert.equal(
           (
-            await (
-              await f.request(`/r/${resourceB}/c/1/api/items`, null, {
-                owner: false,
-              })
-            ).json()
-          ).items.length,
-          0,
+            await f.request(`/r/${resourceB}/c/1/api/items`, null, {
+              owner: false,
+            })
+          ).status,
+          404,
         );
         assert.doesNotMatch(
           await (
@@ -799,5 +794,77 @@ test("revocation while the copied R2 object is loading still denies public and o
     } finally {
       f.close();
     }
+  }
+});
+
+test("configuration-only restore retains source privacy and cannot launder its provenance through another export", async () => {
+  const f = fixture();
+  try {
+    const original = await f.create(resourceA, "Fictional configuration only");
+    const exported = await (
+      await f.request(`/api/resources/${resourceA}/portable`)
+    ).json();
+    assert.equal(exported.items.length, 0);
+    const copiedResponse = await restore(f, exported);
+    assert.equal(copiedResponse.status, 200);
+    const copied = await copiedResponse.json();
+    assert.equal(
+      (
+        await f.command(resourceB, "activate", {
+          expectedVersion: 1,
+          configurationRevision: 1,
+          configurationDigest: copied.configuration.digest,
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (
+        await f.command(resourceB, "control", {
+          expectedVersion: 2,
+          visible: true,
+          paused: true,
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (await f.request(`/r/${resourceB}/c/1/`, null, { owner: false })).status,
+      200,
+    );
+
+    assert.equal(
+      (
+        await f.command(resourceA, "control", {
+          expectedVersion: original.resource.version,
+          visible: false,
+          paused: true,
+        })
+      ).status,
+      200,
+    );
+    assert.equal(
+      (await f.request(`/r/${resourceB}/c/1/`, null, { owner: false })).status,
+      404,
+      "source privacy applies even with no copied item rows",
+    );
+    assert.equal(
+      (
+        await f.command(resourceB, "control", {
+          expectedVersion: 3,
+          visible: true,
+          paused: true,
+        })
+      ).status,
+      409,
+    );
+    assert.equal(
+      (await f.request(`/api/resources/${resourceB}/portable`)).status,
+      409,
+      "configuration copies retain their source instead of becoming original authority",
+    );
+    assert.deepEqual(f.sqlite.prepare("PRAGMA foreign_key_check").all(), []);
+  } finally {
+    f.close();
   }
 });

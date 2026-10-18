@@ -281,7 +281,7 @@ export async function exportPortable(
 ): Promise<PortableGuestbook> {
   const snapshots = await env.DB.batch([
     env.DB.prepare(
-      "SELECT * FROM guestbook_resources WHERE id=? AND version=? AND visible=1",
+      "SELECT * FROM guestbook_resources WHERE id=? AND version=? AND visible=1 AND NOT EXISTS(SELECT 1 FROM guestbook_resource_restores copy WHERE copy.resource_id=guestbook_resources.id)",
     ).bind(selected.id, selected.version),
     env.DB.prepare(
       "SELECT c.* FROM guestbook_resource_configs c JOIN guestbook_resources r ON r.id=c.resource_id AND r.active_revision=c.revision WHERE r.id=?",
@@ -467,7 +467,8 @@ export async function restorePortable(
 
   const sourceGuard = `EXISTS(SELECT 1 FROM guestbook_resources s JOIN guestbook_resource_configs c ON c.resource_id=s.id AND c.revision=s.active_revision
     WHERE s.id=? AND s.workspace_id=? AND s.account_id=? AND s.environment=? AND s.target=? AND s.version=? AND s.visible=1
-      AND c.revision=? AND c.digest=? AND c.config_json=? AND c.source_revision=?)`;
+      AND c.revision=? AND c.digest=? AND c.config_json=? AND c.source_revision=?
+      AND NOT EXISTS(SELECT 1 FROM guestbook_resource_restores copy WHERE copy.resource_id=s.id))`;
   const sourceValues = [
     source.resource,
     proof.workspace,
@@ -621,6 +622,18 @@ export async function restorePortable(
         ...pendingValues,
       ),
     ];
+    statements.push(
+      env.DB.prepare(
+        `INSERT OR IGNORE INTO guestbook_resource_restores(resource_id,source_resource,source_configuration,source_digest)
+      SELECT ?,?,?,? WHERE ${pending}`,
+      ).bind(
+        destination,
+        source.resource,
+        config.revision,
+        config.digest,
+        ...pendingValues,
+      ),
+    );
     for (const copy of copies) {
       statements.push(
         env.DB.prepare(

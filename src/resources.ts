@@ -1,7 +1,7 @@
 import { authorised, error, json, readJSON, type BaseEnv } from './common.ts';
 import { object, resourceConfiguration } from './resource-config.ts';
 import { resourcePublicRoute } from './resource-public.ts';
-import { lineageEligibleSQL, lineageMediaAllowed } from './resource-lineage.ts';
+import { lineageEligibleSQL, lineageMediaAllowed, resourceRestoreEligibleSQL } from './resource-lineage.ts';
 import { exportPortable, restorePortable, PortabilityError } from './resource-portability.ts';
 
 export interface ResourceEnv extends BaseEnv {
@@ -143,6 +143,8 @@ async function mutateResource(db: D1Database, id: string, proof: ResourceIdentit
   if (action === 'activate') {
     eligible = 'AND EXISTS(SELECT 1 FROM guestbook_resource_configs WHERE resource_id=r.id AND revision=? AND digest=? AND source_revision=?)';
     eligibilityValues = [Number(clean.configurationRevision), String(clean.configurationDigest), proof.source];
+  } else if (action === 'control' && clean.visible === true) {
+    eligible = `AND ${resourceRestoreEligibleSQL('r')} AND NOT EXISTS(SELECT 1 FROM guestbook_resource_items restored WHERE restored.resource_id=r.id AND restored.status!='deleted' AND NOT (${lineageEligibleSQL('restored')}))`;
   } else if (action === 'moderate') {
     eligible = `AND EXISTS(SELECT 1 FROM guestbook_resource_items WHERE resource_id=r.id AND id=? AND revision=? AND status!='deleted'${clean.status === 'approved' ? ' AND ' + lineageEligibleSQL('guestbook_resource_items') : ''})`;
     eligibilityValues = [String(clean.item), Number(clean.itemRevision)];

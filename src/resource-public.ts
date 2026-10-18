@@ -1,7 +1,7 @@
 import { error, escape, html, json, limited, readJSON, text } from './common.ts';
 import { resourceConfiguration, object, type ResourceConfiguration } from './resource-config.ts';
 import { sanitisePNG } from './png.ts';
-import { lineageEligibleSQL, lineageMediaAllowed } from './resource-lineage.ts';
+import { lineageEligibleSQL, lineageMediaAllowed, resourceRestoreEligibleSQL } from './resource-lineage.ts';
 import { resourceEnabled, resourceMediaKey, type ResourceEnv, type ResourceRow } from './resources.ts';
 
 interface PublicResource extends ResourceRow {
@@ -106,7 +106,8 @@ export async function resourcePublicRoute(req: Request, env: ResourceEnv, base: 
     const row = await env.DB.prepare(`SELECT r.*,c.config_json,c.revision AS config_revision,a.config_json AS current_config
       FROM guestbook_resources r JOIN guestbook_resource_configs a ON a.resource_id=r.id AND a.revision=r.active_revision
       JOIN guestbook_resource_configs c ON c.resource_id=r.id AND c.revision=COALESCE(?,r.active_revision)
-      WHERE r.id=? AND r.account_id=? AND r.environment=? AND r.visible=1 AND c.activated_at IS NOT NULL`)
+      WHERE r.id=? AND r.account_id=? AND r.environment=? AND r.visible=1 AND c.activated_at IS NOT NULL AND ${resourceRestoreEligibleSQL('r')}
+        AND NOT EXISTS(SELECT 1 FROM guestbook_resource_items restored WHERE restored.resource_id=r.id AND restored.status!='deleted' AND NOT (${lineageEligibleSQL('restored')}))`)
       .bind(revision, id, env.RESOURCE_ACCOUNT_ID!, env.RESOURCE_ENVIRONMENT!).first<PublicResource>();
     if (!row) return error('This guestbook is unavailable.', 404);
     const config = resourceConfiguration(JSON.parse(row.config_json) as unknown);

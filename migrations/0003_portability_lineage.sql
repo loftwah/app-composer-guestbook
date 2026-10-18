@@ -14,3 +14,16 @@ CREATE TABLE IF NOT EXISTS guestbook_resource_lineage (
     REFERENCES guestbook_resource_configs(resource_id, revision)
 );
 CREATE INDEX IF NOT EXISTS guestbook_lineage_source ON guestbook_resource_lineage(source_item);
+
+-- Configuration-only copies also retain source authority. An empty portable
+-- file is not permission to republish a source after it becomes private.
+CREATE TABLE IF NOT EXISTS guestbook_resource_restores (
+  resource_id TEXT PRIMARY KEY REFERENCES guestbook_resources(id),
+  source_resource TEXT NOT NULL REFERENCES guestbook_resources(id),
+  source_configuration INTEGER NOT NULL CHECK(source_configuration > 0),
+  source_digest TEXT NOT NULL,
+  restored_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CHECK(resource_id != source_resource),
+  FOREIGN KEY(source_resource, source_configuration)
+    REFERENCES guestbook_resource_configs(resource_id, revision)
+);

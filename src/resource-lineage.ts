@@ -1,10 +1,18 @@
 import type { ResourceEnv } from "./resources.ts";
 
+export function resourceRestoreEligibleSQL(alias: string): string {
+  return `NOT EXISTS(SELECT 1 FROM guestbook_resource_restores lineage WHERE lineage.resource_id=${alias}.id AND NOT EXISTS(
+    SELECT 1 FROM guestbook_resources original JOIN guestbook_resource_configs config ON config.resource_id=original.id AND config.revision=original.active_revision
+    WHERE original.id=lineage.source_resource AND original.visible=1 AND original.active_revision=lineage.source_configuration AND config.digest=lineage.source_digest
+      AND original.workspace_id=${alias}.workspace_id AND original.account_id=${alias}.account_id
+      AND original.environment=${alias}.environment AND original.target=${alias}.target))`;
+}
+
 // Alias is authored SQL, never a request parameter. Legacy/non-restored items
 // have no lineage. A changed source revision permanently invalidates an older
 // copy, even if the source is subsequently approved again.
 export function lineageEligibleSQL(alias: string): string {
-  return `NOT EXISTS(SELECT 1 FROM guestbook_resource_lineage l WHERE l.item_id=${alias}.id AND NOT EXISTS(
+  return `EXISTS(SELECT 1 FROM guestbook_resources destination WHERE destination.id=${alias}.resource_id AND ${resourceRestoreEligibleSQL("destination")}) AND NOT EXISTS(SELECT 1 FROM guestbook_resource_lineage l WHERE l.item_id=${alias}.id AND NOT EXISTS(
     SELECT 1 FROM guestbook_resource_items s
     JOIN guestbook_resources r ON r.id=s.resource_id
     JOIN guestbook_resources d ON d.id=${alias}.resource_id
