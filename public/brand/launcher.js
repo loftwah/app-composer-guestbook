@@ -41,7 +41,7 @@
         brand.href = composerHome.href;
         brand.setAttribute("aria-label", "App Composer home");
         const image = document.createElement("img");
-        image.src = new URL("composer-icon-20261018-96.png", assetBase).href;
+        image.src = new URL("composer-icon-20261022b-96.png", assetBase).href;
         image.alt = "";
         image.width = image.height = 40;
         const wordmark = document.createElement("span");

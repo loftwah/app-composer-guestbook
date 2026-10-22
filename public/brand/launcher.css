@@ -33,7 +33,7 @@ html.launcher-open { overflow: hidden; scroll-behavior: auto; }
   --menu-field: #25272d;
   --menu-rule: #676b75;
   --menu-selected: #382c25;
-  --menu-signal: #ffa471;
+  --menu-signal: #fc5b05;
   position: fixed;
   left: var(--launcher-left, 50%);
   right: auto;
@@ -59,7 +59,7 @@ html.launcher-open { overflow: hidden; scroll-behavior: auto; }
   --menu-field: #fffefa;
   --menu-rule: #817c73;
   --menu-selected: #edddd0;
-  --menu-signal: #a63e10;
+  --menu-signal: #c74400;
 }
 #app-navigation[open], #app-navigation:has(.launcher-all)[open] {
   display: grid;
