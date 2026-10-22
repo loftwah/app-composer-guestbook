@@ -74,6 +74,12 @@ Forward migration `0003_portability_lineage.sql` retains original source lineage
 
 Keep the operation identity when a restore response is unknown. `GET /api/resources/:freshId?operation=:operationId` reconciles the app-owned durable receipt; the same confirmed request returns its original acknowledgement. Lost acknowledgements retain private scoped media rather than deleting possibly committed content. R2 and D1 do not share a transaction: interrupted/unknown object writes may retain inaccessible private objects pending operator investigation. A refused final source/version guard cleans definitive unused copies. No automatic retry, complete backup, point-in-time recovery, retention guarantee, zero-loss or downtime promise is made. Apply all forward migrations before running this source; code rollback must preserve lineage and tombstones.
 
+## Contribution invitation contract
+
+Each owned Guestbook publishes a small, versioned answer at `GET /r/:resource/api/invitation`. It names the current active configuration, the exact contribution page and collection page, the supported postcard limits, and one state: `open`, `paused`, `closed` or `full`. `accepts` is true only for `open`. The response never contains the guest code, an owner credential, media or submission text.
+
+The state follows the resource's current active configuration, not a historical activation path. `full` means the pending queue (16) or the non-deleted item cap (200) has been reached. The public `/contribute` page uses the same state, so it does not show a form that would immediately fail. A composed app can therefore offer the real form only while this Guestbook accepts postcards, and explain paused, closed, full or unreachable states without inventing a second comment system. The app manifest declares `guestInvitation` version 1; Composer's promotion boundary validates that exact descriptor.
+
 ## Prepared private enquiry API
 
 The app-owned private brief form and inbox are implemented behind explicit closed-by-default resource scopes. No contacts, email, uploads, notifications or public enquiry feed are added. See [the exact routes, private-delivery consent, finite bounds and retention](docs/private-enquiries.md). Local fictional Worker/browser qualification does not establish deployment or complete audience automation.

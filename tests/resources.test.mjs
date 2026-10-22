@@ -111,6 +111,68 @@ for (const base of ['', '/guestbook']) test('two real resource scopes keep indep
   } finally { f.close(); }
 });
 
+for (const base of ['', '/guestbook']) test('the versioned guest invitation follows the exact resource and current active configuration: ' + (base || 'standalone'), async () => {
+  const f = fixture(base);
+  try {
+    const a = await f.create(resourceA, 'Fictional Trail Notes');
+    const b = await f.create(resourceB, 'Fictional Launch Board');
+    const invitation = async id => {
+      const response = await f.request(`/r/${id}/api/invitation`, null, { owner: false });
+      return { status: response.status, body: await response.json(), cache: response.headers.get('Cache-Control') };
+    };
+    const currentVersion = () => f.sqlite.prepare('SELECT version FROM guestbook_resources WHERE id=?').get(resourceA).version;
+    const open = await invitation(resourceA);
+    assert.equal(open.status, 200);
+    assert.equal(open.cache, 'no-store');
+    assert.deepEqual(open.body, {
+      contract: 1,
+      provider: 'guestbook',
+      resource: resourceA,
+      invitation: {
+        version: 1,
+        kind: 'postcard',
+        state: 'open',
+        accepts: true,
+        configuration: a.configuration.revision,
+        contribute: `${f.env.PUBLIC_ORIGIN}${base}/r/${resourceA}/c/${a.configuration.revision}/contribute`,
+        collection: `${f.env.PUBLIC_ORIGIN}${base}/r/${resourceA}/c/${a.configuration.revision}/`,
+        limits: { message: 160, alias: 60, width: 1200, height: 900, bytes: 100000 },
+      },
+    });
+    assert.doesNotMatch(JSON.stringify(open.body), /hunter2|OWNER|token|workspace/i, 'the invitation never leaks the guest code or owner identity');
+    assert.equal((await invitation(resourceB)).body.invitation.state, 'open', 'each resource owns its own invitation');
+
+    f.sqlite.prepare('UPDATE guestbook_resources SET paused=1 WHERE id=?').run(resourceA);
+    const paused = await invitation(resourceA);
+    assert.equal(paused.body.invitation.state, 'paused');
+    assert.equal(paused.body.invitation.accepts, false);
+    assert.equal((await invitation(resourceB)).body.invitation.state, 'open');
+    f.sqlite.prepare('UPDATE guestbook_resources SET paused=0 WHERE id=?').run(resourceA);
+
+    const closed = await f.command(resourceA, 'stage', { expectedVersion: currentVersion(), configuration: config('Fictional Trail Notes', { guestAccess: 'closed' }) });
+    assert.equal(closed.status, 200);
+    await f.command(resourceA, 'activate', { expectedVersion: closed.body.resource.version, configurationRevision: closed.body.configuration.revision, configurationDigest: closed.body.configuration.digest });
+    const nowClosed = await invitation(resourceA);
+    assert.equal(nowClosed.body.invitation.state, 'closed');
+    assert.equal(nowClosed.body.invitation.accepts, false);
+    assert.equal(nowClosed.body.invitation.configuration, closed.body.configuration.revision);
+    assert.match(nowClosed.body.invitation.contribute, new RegExp(`/c/${closed.body.configuration.revision}/contribute$`));
+
+    for (let index = 0; index < 16; index++)
+      f.sqlite.prepare("INSERT INTO guestbook_resource_items(id,resource_id,caption,author,status) VALUES(?,?,?,?,'pending')")
+        .run(`fictional-full-${String(index).padStart(4, '0')}`, resourceA, 'Queued for review', 'Fictional visitor');
+    const reopened = await f.command(resourceA, 'stage', { expectedVersion: currentVersion(), configuration: config('Fictional Trail Notes') });
+    await f.command(resourceA, 'activate', { expectedVersion: reopened.body.resource.version, configurationRevision: reopened.body.configuration.revision, configurationDigest: reopened.body.configuration.digest });
+    const full = await invitation(resourceA);
+    assert.equal(full.body.invitation.state, 'full');
+    assert.equal(full.body.invitation.accepts, false);
+    assert.equal(/id="guest-postcard"/.test(await (await f.request(`/r/${resourceA}/c/${reopened.body.configuration.revision}/contribute`, null, { owner: false })).text()), false, 'a full queue never shows a form that cannot accept a postcard');
+
+    f.sqlite.prepare('UPDATE guestbook_resources SET visible=0 WHERE id=?').run(resourceA);
+    assert.equal((await invitation(resourceA)).status, 404, 'a hidden guestbook is unavailable, not open');
+  } finally { f.close(); }
+});
+
 test('actual writes require exact app source, runtime account/environment, management target and workspace', async () => {
   const f = fixture();
   try {

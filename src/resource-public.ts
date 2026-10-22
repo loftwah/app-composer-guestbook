@@ -16,6 +16,36 @@ interface ResourceItem {
   revision: number;
   synthetic: number;
 }
+// Contribution availability belongs to the resource and its current active
+// configuration. It is a small, versioned public contract so a composed app can
+// offer the real guestbook form only while that guestbook accepts postcards.
+const invitationLimits = { message: 160, alias: 60, width: 1200, height: 900, bytes: 100000 } as const;
+const pendingLimit = 16, itemLimit = 200;
+type InvitationState = 'open' | 'paused' | 'closed' | 'full';
+async function invitationState(env: ResourceEnv, resource: Pick<PublicResource, 'id' | 'paused'>, current: ResourceConfiguration): Promise<InvitationState> {
+  if (resource.paused) return 'paused';
+  if (current.guestAccess !== 'postcards') return 'closed';
+  const counts = await env.DB.prepare(`SELECT SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending, COUNT(*) AS total
+    FROM guestbook_resource_items WHERE resource_id=? AND status!='deleted'`)
+    .bind(resource.id).first<{ pending: number | null; total: number }>();
+  return (counts?.pending ?? 0) >= pendingLimit || (counts?.total ?? 0) >= itemLimit ? 'full' : 'open';
+}
+async function invitationFor(env: ResourceEnv, resource: PublicResource, current: ResourceConfiguration, url: URL, base: string) {
+  const state = await invitationState(env, resource, current);
+  // The guest code and owner credential never appear here. A visitor still gets
+  // the contribution page as its own app-owned route.
+  const revision = resource.active_revision!;
+  return {
+    version: 1,
+    kind: 'postcard',
+    state,
+    accepts: state === 'open',
+    configuration: revision,
+    contribute: `${url.origin}${base}/r/${resource.id}/c/${revision}/contribute`,
+    collection: `${url.origin}${base}/r/${resource.id}/c/${revision}/`,
+    limits: invitationLimits,
+  };
+}
 const itemView = (item: ResourceItem, url: URL, base: string, resource: PublicResource) => ({
   contract: 1,
   provider: 'guestbook',
@@ -87,7 +117,8 @@ async function submitResourcePostcard(req: Request, env: ResourceEnv, resource: 
 function contributionForm(resourceBase: string, assetBase: string) {
   return `<h1>Leave a postcard.</h1><p>Your message stays private until the owner approves it.</p>
     <form id="guest-postcard" method="post" action="${resourceBase}/api/guest-postcard"><fieldset><legend>Your postcard</legend>
-    <label>Guest code<input name="code" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="32" required></label>
+    <p class="small" id="guest-code-hint">The owner shares this guest code separately. It is not an account password.</p>
+    <label>Guest code<input name="code" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="32" required aria-describedby="guest-code-hint"></label>
     <label>Your message<textarea name="caption" maxlength="160" rows="4" required></textarea></label>
     <label>Name or alias (optional)<input name="author" maxlength="60" autocomplete="off"></label>
     <label class="postcard-consent"><input name="consent" type="checkbox" required> I wrote this and agree that the owner may publish my postcard and alias.</label>
@@ -116,6 +147,8 @@ export async function resourcePublicRoute(req: Request, env: ResourceEnv, base: 
     if (tail === '/api/guest-postcard' && req.method === 'POST') return await submitResourcePostcard(req, env, row, current);
     if (req.method !== 'GET') return error('This public route is read-only.', 405);
     if (tail === '/' && revision === null) return new Response(null, { status: 302, headers: { Location: publicBase + '/', 'Cache-Control': 'no-store' } });
+    if (tail === '/api/invitation')
+      return json({ contract: 1, provider: 'guestbook', resource: id, invitation: await invitationFor(env, row, current, url, base) });
     const media = tail.match(/^\/media\/([a-z0-9-]{6,64})$/);
     if (media) {
       const item = await env.DB.prepare(`SELECT id FROM guestbook_resource_items i WHERE resource_id=? AND id=? AND status='approved' AND ${lineageEligibleSQL('i')}`).bind(id, media[1]!).first();
@@ -130,14 +163,17 @@ export async function resourcePublicRoute(req: Request, env: ResourceEnv, base: 
       return html(item.caption, `<a href="${publicBase}/">Back to ${escape(config.title)}</a><h1>${escape(item.caption)}</h1><img class="detail-media" src="${resourceBase}/media/${item.id}" alt="${escape(item.caption)}" width="1200" height="900"><p>${escape(item.author)}</p>`, base, 'guestbook', config.theme, item.caption, url.origin, path, url.origin, config.title);
     }
     if (tail === '/contribute') {
-      const open = current.guestAccess === 'postcards' && !row.paused;
-      return html(config.title, `<a href="${publicBase}/">Back to ${escape(config.title)}</a>${open ? contributionForm(resourceBase, base) : '<h1>Postcards are closed</h1><p>You can still browse the approved collection.</p>'}`, base, 'guestbook', config.theme, 'Send a postcard for owner approval.', url.origin, path, url.origin, config.title);
+      const state = await invitationState(env, row, current);
+      const closed = state === 'full'
+        ? '<h1>The review queue is full</h1><p>The owner is working through the postcards already waiting. You can still browse the approved collection; try again later.</p>'
+        : '<h1>Postcards are closed</h1><p>You can still browse the approved collection.</p>';
+      return html(config.title, `<a href="${publicBase}/">Back to ${escape(config.title)}</a>${state === 'open' ? contributionForm(resourceBase, base) : closed}`, base, 'guestbook', config.theme, 'Send a postcard for owner approval.', url.origin, path, url.origin, config.title);
     }
     const items = await env.DB.prepare(`SELECT id,caption,author,revision,synthetic FROM guestbook_resource_items i WHERE resource_id=? AND status='approved' AND ${lineageEligibleSQL('i')} ORDER BY created_at DESC,id LIMIT 100`).bind(id).all<ResourceItem>();
     if (tail === '/api/items') return json({ contract: 1, provider: 'guestbook', resource: id, items: items.results.map(item => itemView(item, url, base, row)) });
     if (tail !== '/') return error('Page not found.', 404);
-    const open = current.guestAccess === 'postcards' && !row.paused;
-    return html(config.title, `<h1>${escape(config.title)}</h1><p class="lede">${escape(config.intro)}</p>${open ? `<p><a class="button" href="${publicBase}/contribute">Leave a postcard</a></p>` : '<p>Guest postcards are closed for now.</p>'}
+    const state = await invitationState(env, row, current);
+    return html(config.title, `<h1>${escape(config.title)}</h1><p class="lede">${escape(config.intro)}</p>${state === 'open' ? `<p><a class="button" href="${publicBase}/contribute">Leave a postcard</a></p>` : state === 'full' ? '<p>The review queue is full right now. Try again later.</p>' : '<p>Guest postcards are closed for now.</p>'}
       <section aria-label="Published contributions"><div class="gallery ${config.layout}">${items.results.map(item => `<article><a href="${publicBase}/item/${item.id}"><img src="${resourceBase}/media/${item.id}" alt="${escape(item.caption)}" width="1200" height="900" loading="lazy"><h2>${escape(item.caption)}</h2></a><p>${escape(item.author)}${item.synthetic ? ' · Fictional demonstration' : ''}</p></article>`).join('') || '<p>No published moments yet. The owner reviews every contribution before it appears here.</p>'}</div></section>`,
       base, 'guestbook', config.theme, config.intro, url.origin, path, url.origin, config.title);
   } catch {
