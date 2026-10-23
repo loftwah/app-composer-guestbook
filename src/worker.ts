@@ -1,3 +1,4 @@
+import { publicPhotoView } from './photo-view.ts';
 import {health,publish,pageEvent,postcardReceiptEvent,type PublisherEnv} from "./publisher.mjs";
 import {
   authorised,
@@ -33,19 +34,9 @@ const defaults = {
   layout: "grid",
 };
 function item(p: any, origin: string, base: string) {
-  return {
-    contract: 1,
-    provider: "guestbook",
-    id: p.id,
-    revision: p.revision,
-    title: p.caption,
-    description: p.author,
-    visibility: "public",
-    url: origin + base + "/item/" + p.id,
-    image: origin + base + "/media/" + p.id,
-    synthetic: !!p.synthetic,
-  };
+  return publicPhotoView(p, { url: origin + base + '/item/' + p.id, image: origin + base + '/media/' + p.id });
 }
+
 const app = {
   async fetch(req: Request, env: Env): Promise<Response> {
     try {
