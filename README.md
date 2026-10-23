@@ -83,3 +83,14 @@ The state follows the resource's current active configuration, not a historical 
 ## Prepared private enquiry API
 
 The app-owned private brief form and inbox are implemented behind explicit closed-by-default resource scopes. No contacts, email, uploads, notifications or public enquiry feed are added. See [the exact routes, private-delivery consent, finite bounds and retention](docs/private-enquiries.md). Local fictional Worker/browser qualification does not establish deployment or complete audience automation.
+
+## Scoped invited-member Guestbooks
+
+Composer can connect its shared authenticated membership bridge to the named
+`GuestbookMemberService` Worker entrypoint. Members with an explicit selected
+resource grant can send pending postcards or review that resource's contribution
+metadata and approve, hide or reject a current item. Profile ownership supplies
+no moderation permission. Public transport cannot reach this member endpoint;
+a separate server-only member credential and exact source/target proof are
+required. Owner settings, private media, exports and unrelated resources remain
+outside its dispatch surface. [Contract and local runtime verification](docs/member-service.md).

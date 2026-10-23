@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { readFileSync } from "node:fs";
-import worker from "../src/worker.ts";
+import worker from "../src/app.ts";
 const source = "a".repeat(40),
   account = "fictional-account",
   resource = "fictional-resource",

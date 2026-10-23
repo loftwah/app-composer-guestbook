@@ -2,7 +2,7 @@
   "contract": 1,
   "id": "guestbook",
   "name": "Here / there",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "repository": "https://github.com/loftwah/app-composer-guestbook",
   "runtime": "cloudflare-worker",
   "entry": "src/worker.ts",
@@ -10,6 +10,12 @@
   "routes": [
     "/guestbook"
   ],
+  "memberService": {
+    "version": 1,
+    "entrypoint": "GuestbookMemberService",
+    "transport": "service-binding",
+    "path": "/__composer/member"
+  },
   "capabilities": [
     "items:read",
     "items:moderate",
