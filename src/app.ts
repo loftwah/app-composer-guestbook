@@ -21,6 +21,7 @@ import { sanitisePNG } from "./png.ts";
 import {guestDefaults, submitPostcard} from "./guest.ts";
 import { resourceEnabled, resourceRoutes, type ResourceEnv } from './resources.ts';
 import { purgeEnquiries } from './enquiry-store.ts';
+import { memberServiceContract } from './member-service.ts';
 export interface Env extends BaseEnv, PublisherEnv, ResourceEnv {
   MEDIA: R2Bucket;
   ASSETS?: Fetcher;
@@ -60,6 +61,7 @@ const app = {
           resourceContract: 1,
           portabilityContract: 1,
           enquiryContract: 1,
+          memberService: memberServiceContract,
           resourcesEnabled: resourceEnabled(env),
           resourceAccount: env.RESOURCE_ACCOUNT_ID ?? null,
           resourceEnvironment: env.RESOURCE_ENVIRONMENT ?? null,

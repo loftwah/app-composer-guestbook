@@ -66,6 +66,35 @@ The named `preview` environment is intentionally unprovisioned: resource variabl
 
 ## Approved content portability and recovery limits
 
+The scoped resource configuration also supports an explicit `guestAccess: members`
+mode. Its default remains `closed`; existing resources are unchanged. In member
+mode public invitation/form/submission routes remain closed, including the public
+puzzle code. Only the named `GuestbookMemberService` entrypoint can submit, using
+the version 2 contract and its separate existing member-service credential.
+Composer must check current workspace membership and the exact resource/action
+grant immediately before dispatch. Selecting this mode creates no grant.
+
+Version 2 requires the exact active configuration revision, digest and source,
+and trusted `context: {dataClass: "synthetic"}`. Contributions require a visible,
+unpaused member-mode resource, consent, a sanitised PNG and a stable submission
+operation ID. They start pending and are marked as fictional demonstration data;
+real/internal/sensitive records are outside this qualified path. The app rechecks
+the exact configuration and admission controls atomically after asynchronous image
+work. A separate moderator grant remains necessary to inspect and approve content.
+The older version 1 contract retains its existing closed/public-postcard behaviour
+and cannot operate on a newly selected member-mode resource.
+
+An exact actor/resource/operation retry reuses its private image and item. Changed
+payload/configuration conflicts. The read-only `contribution-status` operation
+reports the original operation without resubmitting; the trusted caller still
+checks current grants and current configuration. Unknown acknowledgements retain
+their stable identity and staged private media rather than deleting a possible
+committed winner. A pending operation may consume a daily slot. Staged media is
+not public and may need explicit operator retention review; no automatic deletion
+or complete backup claim is introduced. Member admission uses six new-operation
+attempts per actor/resource per 15 minutes, eight reservations per resource/day,
+and the existing 16-pending/200-item atomic caps.
+
 The authenticated resource API supports a bounded portable file at `GET /api/resources/:id/portable`. It includes the active declared configuration, exact build/configuration/source identities, up to eight original approved contributions, their sanitised PNG bytes and SHA-256 digests, and explicit included/eligible counts. Missing media or more than eight eligible contributions makes coverage partial. Pending, hidden, deleted and previously restored contributions, credentials, global owner photos, other apps, Worker deployments, DNS, cost metrics and third-party data are excluded. No new licence is granted; the operator must retain consent and confirm permission to copy.
 
 `POST /api/resources/:freshId/restore` accepts only `{operationId, confirmRights: true, manifest}` through the existing server-authenticated workspace/account/environment/source/target boundary. It requires the current same app build and the original live source configuration, version, approved item revisions, metadata and PNG digests. It never overwrites an existing resource, item or tombstone. New resource/item identities start private and paused, with a staged configuration, no active publication and pending contributions. The file supplies data, never authority. This is not offline or cross-account disaster recovery and cannot recover a lost source database.

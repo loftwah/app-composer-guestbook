@@ -8,6 +8,7 @@ const files = [
   "src/publisher.mts",
   "src/photo-view.ts",
   "src/member-service.ts",
+  "src/member-contribution.ts",
   "src/worker.ts",
   "tests/member-service.test.mjs",
   "tests/photo-view.test.mjs",
