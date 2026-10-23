@@ -297,16 +297,19 @@ export async function submitMemberPostcard(
         "Today’s member postcard limit is reached. Keep this postcard and try tomorrow.",
         429,
       );
+    // Keep the full current-state check in the same statement without nesting
+    // its lineage expressions beyond D1's expression-tree depth limit.
     await env.DB.prepare(
-      `INSERT OR IGNORE INTO guestbook_resource_operations(resource_id,id,action,fingerprint,status,result_json)
-      SELECT ?,?,'member-contribute',?,'pending',? WHERE EXISTS(${activeSQL(true)})`,
+      `WITH eligible_member_resource AS (${activeSQL(true)})
+      INSERT OR IGNORE INTO guestbook_resource_operations(resource_id,id,action,fingerprint,status,result_json)
+      SELECT ?,?,'member-contribute',?,'pending',? WHERE EXISTS(SELECT 1 FROM eligible_member_resource)`,
     )
       .bind(
+        ...identityValues(resource, proof, configuration),
         resource,
         operation,
         fingerprint,
         operationRecord,
-        ...identityValues(resource, proof, configuration),
       )
       .run();
     record = await readOperation();
@@ -338,19 +341,20 @@ export async function submitMemberPostcard(
       await env.MEDIA.put(key, cleaned.bytes, {
         httpMetadata: { contentType: "image/png" },
       });
-    const eligible = `EXISTS(${activeSQL(true)}) AND EXISTS(SELECT 1 FROM guestbook_resource_operations WHERE resource_id=? AND id=? AND fingerprint=? AND status='pending')`;
+    const eligible = `EXISTS(SELECT 1 FROM eligible_member_resource) AND EXISTS(SELECT 1 FROM guestbook_resource_operations WHERE resource_id=? AND id=? AND fingerprint=? AND status='pending')`;
     await env.DB.batch([
       env.DB.prepare(
-        `INSERT OR IGNORE INTO guestbook_resource_items(id,resource_id,caption,author,status,synthetic)
+        `WITH eligible_member_resource AS (${activeSQL(true)})
+        INSERT OR IGNORE INTO guestbook_resource_items(id,resource_id,caption,author,status,synthetic)
         SELECT ?,?,?,?,'pending',1 WHERE ${eligible}
           AND (SELECT COUNT(*) FROM guestbook_resource_items WHERE resource_id=? AND status='pending')<16
           AND (SELECT COUNT(*) FROM guestbook_resource_items WHERE resource_id=? AND status!='deleted')<200`,
       ).bind(
+        ...identityValues(resource, proof, configuration),
         id,
         resource,
         caption,
         author,
-        ...identityValues(resource, proof, configuration),
         resource,
         operation,
         fingerprint,
