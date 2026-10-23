@@ -2,6 +2,11 @@ import { basePath, error, json, readJSON } from "./common.ts";
 import { object } from "./resource-config.ts";
 import { resourcePublicRoute } from "./resource-public.ts";
 import {
+  requireMemberConfiguration,
+  submitMemberPostcard,
+  memberContributionStatus,
+} from "./member-contribution.ts";
+import {
   digest,
   mutateResource,
   ownedResource,
@@ -14,6 +19,12 @@ export interface MemberEnv extends ResourceEnv {
   MEMBER_SERVICE_TOKEN?: string;
   MEMBER_ISSUER?: string;
 }
+export const memberServiceContract = {
+  version: 2,
+  entrypoint: "GuestbookMemberService",
+  transport: "service-binding",
+  path: "/__composer/member",
+} as const;
 
 // Only the named Worker service entrypoint calls this function. The public
 // Worker rejects this route even with a member token. Composer owns the current
@@ -60,9 +71,13 @@ export async function memberServiceRequest(
             "resource",
             "action",
             "input",
+            "configuration",
+            "context",
           ].includes(key),
       ) ||
-      body.schema !== "composer.member-operation/1" ||
+      !["composer.member-operation/1", "composer.member-operation/2"].includes(
+        String(body.schema),
+      ) ||
       body.workspace !== proof.workspace ||
       typeof body.resource !== "string" ||
       !/^[a-z0-9-]{6,64}$/.test(body.resource) ||
@@ -74,7 +89,9 @@ export async function memberServiceRequest(
       typeof body.actor.accountId !== "string" ||
       !/^[a-zA-Z0-9_-]{1,128}$/.test(body.actor.accountId) ||
       !object(body.input) ||
-      !["contribute", "moderate"].includes(String(body.action))
+      !["contribute", "moderate", "contribution-status"].includes(
+        String(body.action),
+      )
     ) {
       return error(
         "The selected member, resource or action does not match.",
@@ -82,6 +99,72 @@ export async function memberServiceRequest(
       );
     }
     const resource = await ownedResource(env.DB, body.resource, proof);
+    const version2 = body.schema === "composer.member-operation/2";
+    if (Object.keys(body).length !== (version2 ? 8 : 6))
+      return error(
+        "Use the complete versioned member operation envelope.",
+        403,
+      );
+    if (version2) {
+      if (
+        !object(body.context) ||
+        Object.keys(body.context).length !== 1 ||
+        body.context.dataClass !== "synthetic"
+      )
+        return error(
+          "This member contract requires trusted synthetic-only context.",
+          403,
+        );
+      const configuration = await requireMemberConfiguration(
+        env,
+        resource.id,
+        proof,
+        body.configuration,
+        body.action === "contribute",
+      );
+      if (body.action === "contribute")
+        return await submitMemberPostcard(
+          req,
+          env,
+          resource.id,
+          proof,
+          configuration,
+          {
+            issuer: String(body.actor.issuer),
+            accountId: body.actor.accountId,
+          },
+          body.input,
+        );
+      if (body.action === "contribution-status")
+        return await memberContributionStatus(
+          env,
+          resource.id,
+          {
+            issuer: String(body.actor.issuer),
+            accountId: body.actor.accountId,
+          },
+          body.input,
+        );
+    } else {
+      if (body.action === "contribution-status")
+        return error("Use the version 2 contribution receipt contract.", 400);
+      // Old bridges cannot enter a newly opted-in member-only resource without
+      // its exact configuration assertions and synthetic contract.
+      const current = await env.DB.prepare(
+        "SELECT config_json FROM guestbook_resource_configs WHERE resource_id=? AND revision=?",
+      )
+        .bind(resource.id, resource.active_revision)
+        .first<{ config_json: string }>();
+      if (
+        current &&
+        (JSON.parse(current.config_json) as { guestAccess?: unknown })
+          .guestAccess === "members"
+      )
+        return error(
+          "This resource requires the version 2 member contract.",
+          409,
+        );
+    }
     if (body.action === "contribute") {
       if (
         Object.keys(body.input).some(
@@ -119,7 +202,7 @@ export async function memberServiceRequest(
         .bind(resource.id)
         .all();
       return json({
-        contract: 1,
+        contract: version2 ? 2 : 1,
         resource: { id: resource.id, version: resource.version },
         items: items.results,
       });
@@ -159,7 +242,7 @@ export async function memberServiceRequest(
       status: input.status,
     })) as { resource: { version: number } };
     return json({
-      contract: 1,
+      contract: version2 ? 2 : 1,
       outcome: "applied",
       resource: { id: resource.id, version: result.resource.version },
       item: input.item,
