@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
-import worker from "../src/worker.ts";
+import worker from "../src/app.ts";
 
 const config = JSON.parse(
   readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8"),

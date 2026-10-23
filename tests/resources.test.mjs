@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { readFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import { runInNewContext } from 'node:vm';
-import worker from '../src/worker.ts';
+import worker from '../src/app.ts';
 
 const source = 'a'.repeat(40), account = '1003dc1d93af0ebea56b2f1252f89627';
 const workspace = 'fictional-workspace-0001';

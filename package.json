@@ -8,6 +8,7 @@
     "check": "pnpm check:types && pnpm lint && pnpm format:check && pnpm test",
     "deploy": "node scripts/deploy.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "test:member-runtime": "pnpm build && node scripts/verify-member-entrypoint.mjs",
     "test:page": "node --experimental-strip-types --test tests/page.test.mjs",
     "source:write": "node scripts/build-source.mjs --write",
     "check:types": "node scripts/build-source.mjs --check",

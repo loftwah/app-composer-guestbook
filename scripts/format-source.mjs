@@ -7,6 +7,9 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const files = [
   "src/publisher.mts",
   "src/photo-view.ts",
+  "src/member-service.ts",
+  "src/worker.ts",
+  "tests/member-service.test.mjs",
   "tests/photo-view.test.mjs",
   "src/resource-enquiries.ts",
   "public/brand/enquiry-form.css",
@@ -23,6 +26,7 @@ const files = [
   "tests/deploy-source.test.mjs",
   "tests/deployment-config.test.mjs",
   "scripts/run-worker.mjs",
+  "scripts/verify-member-entrypoint.mjs",
   "scripts/build-source.mjs",
   "scripts/format-source.mjs",
   "scripts/source-map.json",

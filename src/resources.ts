@@ -33,7 +33,7 @@ interface OperationRow {
   status: 'pending' | 'completed';
   result_json: string | null;
 }
-class ResourceError extends Error {
+export class ResourceError extends Error {
   readonly status: number;
   constructor(message: string, status = 400) { super(message); this.status = status; }
 }
@@ -46,7 +46,7 @@ export const resourceEnabled = (env: ResourceEnv) => Boolean(env.RESOURCE_ACCOUN
 
 // The actual write boundary verifies deployed source and runtime identity.
 // A source-status page or old Composer receipt cannot substitute for this.
-async function identity(req: Request, env: ResourceEnv, base: string, source: string): Promise<ResourceIdentity> {
+export async function resourceIdentity(req: Request, env: ResourceEnv, base: string, source: string): Promise<ResourceIdentity> {
   if (!resourceEnabled(env)) throw new ResourceError('Owned Guestbooks are not connected in this environment.', 503);
   if (!req.headers.get('Authorization')?.startsWith('Bearer ') || !await authorised(req, env, 'unused_resource_session')) {
     throw new ResourceError('The server-side app connection is required.', 401);
@@ -65,7 +65,7 @@ async function identity(req: Request, env: ResourceEnv, base: string, source: st
   return { workspace, account, environment, source, target };
 }
 
-async function ownedResource(db: D1Database, id: string, identity: ResourceIdentity): Promise<ResourceRow> {
+export async function ownedResource(db: D1Database, id: string, identity: ResourceIdentity): Promise<ResourceRow> {
   const row = await db.prepare('SELECT * FROM guestbook_resources WHERE id=? AND workspace_id=? AND account_id=? AND environment=? AND target=?')
     .bind(id, identity.workspace, identity.account, identity.environment, identity.target).first<ResourceRow>();
   if (!row) throw new ResourceError('This resource is not owned by the selected workspace and target.', 403);
@@ -106,7 +106,7 @@ async function createResource(db: D1Database, id: string, proof: ResourceIdentit
   return operationResult(results[2]?.results?.[0] as OperationRow | undefined ?? null, fingerprint);
 }
 
-async function mutateResource(env: ResourceEnv, id: string, proof: ResourceIdentity, command: Record<string, unknown>) {
+export async function mutateResource(env: ResourceEnv, id: string, proof: ResourceIdentity, command: Record<string, unknown>) {
   const db = env.DB;
   const action = command.action;
   if (!['stage', 'activate', 'control', 'moderate'].includes(String(action)) || !operationId(command.operationId) || !version(command.expectedVersion)) {
@@ -190,7 +190,7 @@ export async function resourceRoutes(req: Request, env: ResourceEnv, base: strin
   try {
     const match = path.match(/^\/api\/resources\/([a-z0-9-]{6,64})(?:\/(export|portable|restore|media\/([a-z0-9-]{6,64})|enquiries(?:\/(export|receipt))?))?$/);
     if (!match) throw new ResourceError('Choose a resource route.', 404);
-    const id = match[1]!, proof = await identity(req, env, base, source);
+    const id = match[1]!, proof = await resourceIdentity(req, env, base, source);
     if (!['GET', 'POST'].includes(req.method)) throw new ResourceError('Use the supported resource request method.', 405);
     if (match[2]?.startsWith('enquiries')) return ownedEnquiryRoutes(req, env, base, match[4] ?? '', source, { resource: await ownedResource(env.DB, id, proof), proof });
     if (req.method === 'GET') {

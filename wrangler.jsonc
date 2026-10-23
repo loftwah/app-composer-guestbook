@@ -30,7 +30,8 @@
     "PUBLIC_ORIGIN": "https://guestbook.loftwah.com",
     "OWNER_STUDIO_URL": "https://composer.loftwah.com/_emdash/admin/plugins/composer-miniapps/apps?app=guestbook",
     "RESOURCE_ACCOUNT_ID": "1003dc1d93af0ebea56b2f1252f89627",
-    "RESOURCE_ENVIRONMENT": "production"
+    "RESOURCE_ENVIRONMENT": "production",
+    "MEMBER_ISSUER": "https://composer.loftwah.com"
   },
   "r2_buckets": [
     {
@@ -53,7 +54,8 @@
         "PUBLIC_ORIGIN": "",
         "OWNER_STUDIO_URL": "",
         "RESOURCE_ACCOUNT_ID": "",
-        "RESOURCE_ENVIRONMENT": ""
+        "RESOURCE_ENVIRONMENT": "",
+        "MEMBER_ISSUER": ""
       },
       "d1_databases": [],
       "r2_buckets": [],
