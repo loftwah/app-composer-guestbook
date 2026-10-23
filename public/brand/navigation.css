@@ -40,8 +40,8 @@ html{scrollbar-gutter:stable}@media(max-width:600px){}
 /* Composer is a recognisable home link; the mini-app keeps its own identity. */
 header .composer-return{display:inline-flex;align-items:center;gap:9px;min-height:44px;padding:6px 0;text-decoration:none;color:var(--fg,#f2f3f5);font:600 15px/1.2 Space,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap;flex-shrink:0}
 header .composer-return img{display:block;flex-shrink:0;width:28px;height:28px}
-header .composer-return:hover span{color:var(--accent,#ed936c)}
-header .composer-return:focus-visible{outline:3px solid var(--accent,#ff9b55);outline-offset:4px;border-radius:4px}
+header .composer-return:hover span{color:var(--composer-accent-hover)}
+header .composer-return:focus-visible{outline:3px solid var(--composer-focus);outline-offset:4px;border-radius:4px}
 header .composer-return>span{font:inherit;color:inherit;margin:0}
 header .composer-return .composer-name{display:block;font:inherit;color:inherit;margin:0}
 header .composer-return .composer-context{display:block;margin-top:3px;font:12px/1.3 system-ui,sans-serif;letter-spacing:0;color:var(--muted,#afb3bb)}
