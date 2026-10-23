@@ -488,3 +488,15 @@ test("member endpoint fails closed for runtime proof, actor substitution, unrela
     f.close();
   }
 });
+
+test("manifest explicitly opts into the narrow named service contract", () => {
+  const manifest = JSON.parse(
+    readFileSync(new URL("../app.manifest.json", import.meta.url), "utf8"),
+  );
+  assert.deepEqual(manifest.memberService, {
+    version: 1,
+    entrypoint: "GuestbookMemberService",
+    transport: "service-binding",
+    path: "/__composer/member",
+  });
+});
