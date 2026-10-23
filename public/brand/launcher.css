@@ -2,6 +2,35 @@
  * Each independent app commits its own copy. See docs/source-maintenance.md.
  * Only results scroll. Branding, search and exit stay within the visual viewport.
  */
+/* composer.palette/1 — #214 semantic roles for locally copied Composer chrome.
+ * Copy through ui:assets; no host palette or owner theme is overwritten here.
+ * Primary fills always use dark ink; text has its own light-theme variant.
+ */
+:root {
+  --composer-brand: #fc5b05;
+  --composer-action: #fc5b05;
+  --composer-action-hover: #ff7a33;
+  --composer-action-pressed: #e85404;
+  --composer-on-action: #17181b;
+  --composer-accent: #fc5b05;
+  --composer-accent-hover: #ff7a33;
+  --composer-focus: #fc5b05;
+  --composer-selected: #3b2b21;
+}
+:root[data-theme="light"] {
+  --composer-accent: #c74400;
+  --composer-accent-hover: #a63a00;
+  /* The darker role clears 3:1 on elevated ivory/violet app surfaces too. */
+  --composer-focus: #c74400;
+  --composer-selected: #fff0e5;
+}
+/* The return link belongs to Composer even inside a separately branded app. */
+header .composer-return:hover span { color: var(--composer-accent-hover); }
+header .composer-return:focus-visible {
+  outline: 3px solid var(--composer-focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
 [hidden] { display: none !important; }
 html { scrollbar-gutter: stable; }
 html.launcher-open { overflow: hidden; scroll-behavior: auto; }
