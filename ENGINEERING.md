@@ -21,3 +21,8 @@ The Worker program uses Workers globals and the browser program uses DOM globals
 The deployment script captures the reviewed SHA/config/source before checking and building, then rechecks main/HEAD/origin-main, clean status, config and all tracked file bytes/types before forward DB migrations and again immediately before upload, including assume-unchanged/skip-worktree edits. Failed migrations abort before upload. It explicitly selects root `wrangler.jsonc` and the default environment. Local browser and build evidence does not establish production, physical-device or platform-unfurl acceptance.
 
 Here / there owns D1 photo/moderation records, private R2 media, guest postcards and the provider API. Linkarooie consumes only currently approved public items; it does not acquire ownership of this data or permission to approve an item. Do not change resource identifiers or import real private data for a test. Source extraction preserves routes, request schemas and CSP; resource provisioning and Composer source pins are separate release work.
+
+`src/photo-view.ts` is the browser-safe, app-owned current-eligibility and public
+item view adapter. The Worker provider API uses it directly. A reviewed consumer
+may copy this MIT source at an exact application revision; it supplies its own
+isolated transport locations and never acquires production records or media.

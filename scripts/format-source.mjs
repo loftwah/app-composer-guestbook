@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const files = [
   "src/publisher.mts",
+  "src/photo-view.ts",
+  "tests/photo-view.test.mjs",
   "src/resource-enquiries.ts",
   "public/brand/enquiry-form.css",
   ...readdirSync(resolve(root, "src"))
