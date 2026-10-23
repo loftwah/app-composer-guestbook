@@ -75,6 +75,14 @@
     // Studio routes share the explicitly selected Composer home. They navigate
     // normally and retain the destination's own authentication boundary.
     const tasks = [
+        { name: "Explore App Composer", path: "/discover", description: "Working tools and recent releases", keywords: "new latest shipped features work discover", icon: "stacks" },
+        { name: "Launch Kit", path: "/launch-kit", description: "Make profile cards, icons and launch assets", keywords: "profile card branding icon social image png artwork design", icon: "settings" },
+        { name: "My profile / My apps", path: "/me", description: "Open your invited profile and app tools", keywords: "member account login sign in profile publish", icon: "settings" },
+        { name: "Team application films", path: "/platform/demo", description: "Watch the overview and technical walkthrough", keywords: "video demo movie team platform request", icon: "book" },
+        { name: "Platform Teams", path: "/platform", description: "Understand team application requests and policies", keywords: "enterprise team permissions request policy", icon: "stacks" },
+        { name: "Your app, your admin", path: "/manage", description: "Follow the owner workflow", keywords: "owner admin enquiries moderation", icon: "settings" },
+        { name: "People & access", path: "/people", description: "Manage invitations and app permissions", keywords: "team invite access member grants permissions", icon: "settings" },
+        { name: "Build story", path: "/building", description: "Follow a brief into working software", keywords: "build story implementation behind scenes", icon: "book" },
         { name: "Your creator stacks", path: "/_emdash/admin/plugins/composer-stacks/stacks", description: "Open the invited creator studio", keywords: "workspace saved stacks edit owner publish", icon: "stacks" },
         { name: "Init", path: "/init", description: "Shape a new app", keywords: "build create app configuration start", icon: "settings" },
         { name: "Get Ready", path: "/ready", description: "Prepare your development environment", keywords: "setup tools deploy check readiness", icon: "terminal" },
@@ -86,7 +94,7 @@
         { name: "Manage mini-apps", path: "/_emdash/admin/plugins/composer-miniapps/apps", description: "Open the invited owner studio", keywords: "admin edit moderation approve profile", icon: "settings" },
         { name: "Decision Explorer", path: "/explore", description: "Explore how your app could work", keywords: "decisions options", icon: "stacks" },
         { name: "Review share report", path: "/review", description: "Read a saved Link Check report", keywords: "seo inspect metadata social preview report", icon: "review" },
-        { name: "App activity", path: "/activity", description: "See the recorded public activity", keywords: "analytics counts visits", icon: "chart" },
+        { name: "Analytics & reports", path: "/activity", description: "Inspect recorded actions and share a finding", keywords: "analytics counts visits report story share", icon: "chart" },
         { name: "Documentation", path: "/docs", description: "Read the product and source guides", keywords: "docs help reference", icon: "book" },
     ];
     for (const entry of dialog.querySelectorAll("[data-destination]")) {
