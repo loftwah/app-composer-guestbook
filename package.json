@@ -18,9 +18,9 @@
     "build": "pnpm check:types && node scripts/run-worker.mjs build"
   },
   "devDependencies": {
-    "wrangler": "4.143.1",
+    "wrangler": "4.152.0",
     "typescript": "6.0.3",
-    "@cloudflare/workers-types": "5.20260929.1",
+    "@cloudflare/workers-types": "5.20261024.1",
     "prettier": "3.9.10"
   },
   "packageManager": "pnpm@12.8.1",
