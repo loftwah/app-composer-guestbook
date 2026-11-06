@@ -21,6 +21,39 @@
     "items:moderate",
     "media:private"
   ],
+  "agentCapabilities": {
+    "version": 1,
+    "ui": "https://guestbook.loftwah.com",
+    "storage": "app-owned",
+    "operations": [
+      {
+        "name": "read-invitation",
+        "description": "Read one visitor book's current invitation state, contribution limits and exact form paths. It never returns the guest code or private media.",
+        "kind": "read",
+        "method": "GET",
+        "path": "/r/:resource/api/invitation",
+        "availability": "public",
+        "requires": [
+          "none"
+        ],
+        "confirmation": false,
+        "verified": "2026-11-06"
+      },
+      {
+        "name": "list-public-items",
+        "description": "Read only the currently public, approved contributions. Pending, hidden and deleted items are excluded.",
+        "kind": "read",
+        "method": "GET",
+        "path": "/api/items",
+        "availability": "public",
+        "requires": [
+          "none"
+        ],
+        "confirmation": false,
+        "verified": "2026-11-06"
+      }
+    ]
+  },
   "configuration": {
     "title": {
       "type": "string",
