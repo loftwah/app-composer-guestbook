@@ -42,6 +42,19 @@ for(const base of ['', '/guestbook']) test('guest pending → owner approve → 
     for(const path of ['/api/items/'+saved.id,'/media/'+saved.id,'/item/'+saved.id])assert.equal((await f.request(path,null,{token:'hunter2'})).status,404);
   } finally {f.sqlite.close();}
 });
+for(const base of ['', '/guestbook']) test('fictional Studio film is separate from guest contributions, '+(base||'standalone'),async()=>{
+  const f=fixture(base);try{
+    const page=await(await f.request('/')).text();
+    assert.match(page,/A guestbook, imagined/);
+    assert.match(page,/contains no real guest submissions/);
+    assert.ok(page.indexOf('class="studio-motion"')>page.indexOf('class="gallery '));
+    assert.ok(page.includes(`src="${base}/brand/guestbook-project-plate-motion-20261114.mp4"`));
+    assert.ok(page.includes(`poster="${base}/brand/guestbook-project-plate-motion-20261114.webp"`));
+    assert.match(page,/<video controls playsinline preload="none"/);
+    assert.doesNotMatch(page,/<video[^>]*autoplay/);
+    assert.equal(f.sqlite.prepare('SELECT COUNT(*) n FROM photos').get().n,0);
+  }finally{f.sqlite.close();}
+});
 test('an unavailable item URL is an HTML 404 while the JSON API keeps its error contract',async()=>{
   const f=fixture('/guestbook');try{
     const missing=await f.request('/item/does-not-exist');
