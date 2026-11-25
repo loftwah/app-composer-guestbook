@@ -126,3 +126,17 @@ test("invalid owner destinations fail closed and request query data cannot choos
   const response=await commonAPI(new Request("https://example.test/owner"),{OWNER_STUDIO_URL:destination},"/owner","","fixture_session");assert.equal(response.status,503);assert.equal(response.headers.get("Set-Cookie"),null);assert.equal(response.headers.get("Location"),null);
  }
 });
+
+// Both return links (mounted composition-home and standalone owner secondary) must
+// use the current bundled canonical mark, never the superseded 20261018 one.
+test("Composer return links use the bundled current mark in mounted and owner contexts",async()=>{
+ const mounted=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
+ assert.match(mounted,/<a class="composer-return composition-home" href="\/"><img src="\/guestbook\/brand\/composer-icon-20261022b-96\.png" width="28" height="28" alt="">/);
+ assert.doesNotMatch(mounted,/composer-icon-20261018-96\.png/);
+ const owner=await html("Fixture","","","guestbook","midnight","Description","https://guestbook.loftwah.com","/owner").text();
+ assert.match(owner,/<a class="composer-return composer-return--secondary" href="https:\/\/composer\.loftwah\.com\/"><img src="\/brand\/composer-icon-20261022b-96\.png" width="28" height="28" alt="">/);
+ assert.doesNotMatch(owner,/composer-icon-20261018-96\.png/);
+ const mark=new URL("../public/brand/composer-icon-20261022b-96.png",import.meta.url);
+ assert.equal(existsSync(mark),true,"the canonical mark is committed locally");
+ assert.ok(statSync(mark).size>0,"the canonical mark is non-empty");
+});
