@@ -14,12 +14,12 @@ test("public page keeps escaped content, exact canonical and explicit social ima
     "/",
   );
   const body = await response.text();
-  assert.match(body, /Fixture &lt;img onerror=evil()&gt;/);
+  assert.match(body, /Fixture &lt;img onerror=evil\(\)&gt;/);
   assert.match(body, /property="og:type" content="website"/);
   assert.match(body, /name="twitter:image"/);
   assert.match(body, /rel="apple-touch-icon"/);
   assert.match(body, /id="app-navigation"/);
-  assert.doesNotMatch(body, /<img onerror=evil()>/);
+  assert.doesNotMatch(body, /<img onerror=evil\(\)>/);
 });
 test("mounted page serves navigation inside its mount and owner page stays noindex", async () => {
   const response = html(
@@ -45,21 +45,21 @@ test("mounted page serves navigation inside its mount and owner page stays noind
 test("mounted navigation and saved theme stay in the composition before painting", async () => {
  const response=html("Fixture", "<h1>Fixture</h1>", "/showcase", "showcase", "midnight", "Description", "https://composer.loftwah.com", "/owner");
  const body=await response.text(),head=body.slice(0,body.indexOf("</head>"));
- assert.match(head,/localStorage.getItem\("composer-theme"\)/);
- assert.match(head,/canonical" href="https:\/\/composer.loftwah.com\/showcase\/owner"/);
- assert.match(body, /href="\/guestbook\/"/);
- assert.match(body, /href="\/showcase\/" aria-current="page"/);
- assert.doesNotMatch(body, /href="https:\/\/(guestbook|showcase).loftwah.com"/);
+ assert.match(head,/localStorage.getItem\("composer-theme")\/);
+ assert.match(head,/canonical" href="https:\\composer.loftwah.com\showcase\owner"/);
+ assert.match(body, /href="\guestbook\"/);
+ assert.match(body, /href="\showcase\" aria-current="page"/);
+ assert.doesNotMatch(body, /href="https:\\(guestbook|showcase).loftwah.com"/);
  const standalone=await html("Fixture","","","guestbook","midnight","Description","https://guestbook.loftwah.com").text();
- assert.match(standalone,/localStorage.getItem\("guestbook:reader-theme"\)/);
- assert.match(standalone,/href="https:\/\/showcase.loftwah.com"/);
+ assert.match(standalone,/localStorage.getItem\("guestbook:reader-theme")\/);
+ assert.match(standalone,/href="https:\\showcase.loftwah.com"/);
 });
 
 // A composed route must share its own art rather than another host's root asset.
 test("social image resolves inside the actual app mount",async()=>{
  const body=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
- assert.match(body,/property="og:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/herethere-share-20261018.jpg"/);
- assert.match(body,/name="twitter:image" content="https:\/\/composer.loftwah.com\/guestbook\/brand\/herethere-share-20261018.jpg"/);
+ assert.match(body,/property="og:image" content="https:\\composer.loftwah.com\guestbook\brand\herethere-share-20261018.jpg"/);
+ assert.match(body,/name="twitter:image" content="https:\\composer.loftwah.com\guestbook\brand\herethere-share-20261018.jpg"/);
  assert.match(body,/og:image:width" content="1200"/);
 });
 
@@ -67,9 +67,9 @@ test("social image resolves inside the actual app mount",async()=>{
 test("app switcher uses the reviewed app crops and current app names",async()=>{
  const body=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
  for(const crop of["herethere-small-20261018","linkarooie-small-20261018","linkcheck-small-20261018","hello-small-20261018","carryforward-small-20261018"])assert.match(body,new RegExp('/guestbook/brand/apps/'+crop+'\\.webp'));
- assert.match(body,/Carry \/ forward<small>Portable assistant memory<\/small>/);
- assert.match(body,/Here \/ there<small>Photo guestbook<\/small>/);
- assert.doesNotMatch(body,/Portable AI State|small-v1\.webp|small-v2\.webp|small-v3\.webp|creators\/linkarooie-kangaroo-v1/);
+ assert.match(body,/Carry \ forward<small>Portable assistant memory<\small>/);
+ assert.match(body,/Here \ there<small>Photo guestbook<\small>/);
+ assert.doesNotMatch(body,/Portable AI State|small-v1\.webp|small-v2\.webp|small-v3\.webp|creators\linkarooie-kangaroo-v1/);
 });
 
 // LDraw is the reviewed Composer destination: one authored row, the app's own
@@ -83,7 +83,7 @@ test("the LDraw row keeps its exact link, local tile and authored label",async()
  assert.equal(mounted.split('href="https://ldraw.loftwah.com/"').length-1,1,"exactly one LDraw destination");
  assert.doesNotMatch(mounted,/ldraw[^"<]*(logo|mark)\.(svg|png)/i);
  const standalone=await html("Fixture","","","guestbook","midnight","Description","https://guestbook.loftwah.com").text();
- assert.match(standalone,/<img src="\/brand\/apps\/ldraw-tile-c9c2339a1296-d2e0dc4b-r2-96\.webp" width="40" height="40" alt="">/);
+ assert.match(standalone,/<img src="\brand\apps\ldraw-tile-c9c2339a1296-d2e0dc4b-r2-96\.webp" width="40" height="40" alt="">/);
  assert.equal(existsSync(new URL("../public/brand/apps/ldraw-tile-c9c2339a1296-d2e0dc4b-r2-96.webp",import.meta.url)),true,"the reviewed tile is committed locally");
  assert.ok(statSync(new URL("../public/brand/apps/ldraw-tile-c9c2339a1296-d2e0dc4b-r2-96.webp",import.meta.url)).size>0);
 });
@@ -93,20 +93,20 @@ test("the LDraw row keeps its exact link, local tile and authored label",async()
 // row must match the controller's own LDraw definition rather than another name.
 test("the local launcher indexes LDraw for search and keeps its keyboard contract",()=>{
  const launcher=readFileSync(new URL("../public/brand/launcher.js",import.meta.url),"utf8");
- assert.match(launcher,/name: "LDraw", href: "https:\/\/ldraw\.loftwah\.com\/", image: "apps\/ldraw-tile-c9c2339a1296-d2e0dc4b-r2-96\.webp", standaloneOnly: true, explainer: "\/ldraw", description: "Editable diagrams, PNG and SVG", keywords: "draw drawing diagram excalidraw scene png svg local offline"/);
+ assert.match(launcher,/name: "LDraw", href: "https:\\ldraw.loftwah.com\", image: "apps\ldraw-tile-c9c2339a1296-d2e0dc4b-r2-96\.webp", standaloneOnly: true, explainer: "\ldraw", description: "Editable diagrams, PNG and SVG", keywords: "draw drawing diagram excalidraw scene png svg local offline"/);
  assert.match(launcher,/querySelector\("span:not\(\.task-icon\)"\)\?\.firstChild\?\.textContent/);
- assert.match(launcher,/value\.normalize\("NFD"\)\.replace\(\/\\p\{Diacritic\}\/gu, ""\)\.toLocaleLowerCase\("en"\)/);
+ assert.match(launcher,/value\.normalize\("NFD"\)\.replace\(\\\p\{Diacritic}\\\gu, ""\)\.toLocaleLowerCase\("en"\)/);
  assert.match(launcher,/event\.key === "Escape"/);
- assert.match(launcher,/event\.key === "ArrowDown" \|\| event\.key === "ArrowUp" \|\| event\.key === "Home" \|\| event\.key === "End"/);
- assert.match(launcher,/\(event\.ctrlKey \|\| event\.metaKey\) && !event\.altKey && event\.key\.toLowerCase\(\) === "k"/);
+ assert.match(launcher,/event\.key === "ArrowDown" \\ event\.key === "ArrowUp" \\ event\.key === "Home" \\ event\.key === "End"/);
+ assert.match(launcher,/\(event\.ctrlKey \\ event\.metaKey\) && !event\.altKey && event\.key\.toLowerCase\() === "k"/);
 });
 
 // The footer names the product, not a personal workspace; owner attribution stays.
 test("footer names App Composer and keeps the owner attribution",async()=>{
  const body=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
- assert.match(body,/<a href="https:\/\/composer\.loftwah\.com\/">App Composer<\/a>/);
+ assert.match(body,/<a href="https:\\composer\loftwah\com\">App Composer<\a>/);
  assert.doesNotMatch(body,/workspace/i);
- assert.match(body,/Here \/ there by Loftwah/);
+ assert.match(body,/Here \ there by Loftwah/);
 });
 
 
@@ -131,10 +131,10 @@ test("invalid owner destinations fail closed and request query data cannot choos
 // use the current bundled canonical mark, never the superseded 20261018 one.
 test("Composer return links use the bundled current mark in mounted and owner contexts",async()=>{
  const mounted=await html("Fixture","","/guestbook","guestbook","midnight","Description","https://composer.loftwah.com","/").text();
- assert.match(mounted,/<a class="composer-return composition-home" href="\/"><img src="\/guestbook\/brand\/composer-icon-20261022b-96\.png" width="28" height="28" alt="">/);
+ assert.match(mounted,/<a class="composer-return composition-home" href="\"><img src="\guestbook\brand\composer-icon-20261022b-96\.png" width="28" height="28" alt="">/);
  assert.doesNotMatch(mounted,/composer-icon-20261018-96\.png/);
  const owner=await html("Fixture","","","guestbook","midnight","Description","https://guestbook.loftwah.com","/owner").text();
- assert.match(owner,/<a class="composer-return composer-return--secondary" href="https:\/\/composer\.loftwah\.com\/"><img src="\/brand\/composer-icon-20261022b-96\.png" width="28" height="28" alt="">/);
+ assert.match(owner,/<a class="composer-return composer-return--secondary" href="https:\\composer\loftwah\com\"><img src="\brand\composer-icon-20261022b-96\.png" width="28" height="28" alt="">/);
  assert.doesNotMatch(owner,/composer-icon-20261018-96\.png/);
  const mark=new URL("../public/brand/composer-icon-20261022b-96.png",import.meta.url);
  assert.equal(existsSync(mark),true,"the canonical mark is committed locally");
